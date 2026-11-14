@@ -1,0 +1,4435 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Semiconductor Lab</title>
+  <meta name="description" content="Interactive teaching simulations for PN junction physics, energy band diagrams, and diode characteristics." />
+  <meta property="og:title" content="Semiconductor Lab" />
+  <meta property="og:description" content="Interactive teaching simulations for PN junction physics, energy band diagrams, and diode characteristics." />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <style>
+    :root {
+      --bg: #f4efe6;
+      --surface: #fffdf8;
+      --hdr: rgba(244, 239, 230, .88);
+      --fg: #1c1917;
+      --muted: #78716c;
+      --line: #e5dccb;
+      --soft: #efe8da;
+      --prose: #44403c;
+      --on: #fffdf8;
+      --accent: #0f766e;
+
+      --c-blue: #0f766e;
+      --c-red: #c2410c;
+      --c-green: #15803d;
+      --c-amber: #b45309;
+      --c-sky: #0e7490;
+      --c-violet: #6d28d9;
+      --acceptor-bg: #fecdd3;
+      --acceptor-bd: #c2410c;
+      --donor-bg: #bae6fd;
+      --donor-bd: #0f766e;
+
+      --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+      --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+
+    html[data-theme="dark"] {
+      --bg: #0f0d0b;
+      --surface: #191612;
+      --hdr: rgba(15, 13, 11, .88);
+      --fg: #f5efe6;
+      --muted: #a8a29e;
+      --line: #2c2722;
+      --soft: #211d19;
+      --prose: #d6cfc4;
+      --on: #0f0d0b;
+      --accent: #5eead4;
+      color-scheme: dark;
+
+      --c-blue: #5eead4;
+      --c-red: #fb923c;
+      --c-green: #86efac;
+      --c-amber: #fbbf24;
+      --c-sky: #67e8f9;
+      --c-violet: #c4b5fd;
+      --acceptor-bg: rgba(251, 146, 60, .22);
+      --acceptor-bd: #fb923c;
+      --donor-bg: rgba(94, 234, 212, .20);
+      --donor-bd: #5eead4;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      background-image: radial-gradient(var(--line) 1px, transparent 1px);
+      background-size: 22px 22px;
+      color: var(--fg);
+      font-family: var(--sans);
+      font-size: 14px;
+      line-height: 1.6;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    header.site-hdr {
+      position: sticky;
+      top: 0;
+      width: 100%;
+      z-index: 40;
+      background: var(--hdr);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .hdr-inner {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 0 20px;
+      min-height: 54px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      font-family: var(--serif);
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: -.01em;
+      color: var(--fg);
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    nav.site-nav {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    nav.site-nav a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 13.5px;
+      font-weight: 500;
+      padding: 15px 10px;
+      transition: color .15s ease;
+      white-space: nowrap;
+    }
+
+    nav.site-nav a:hover {
+      color: var(--fg);
+    }
+
+    nav.site-nav a.active {
+      color: var(--fg);
+      box-shadow: inset 0 -2px 0 var(--accent);
+    }
+
+    main.wrap {
+      flex: 1 0 auto;
+      width: 100%;
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 28px 20px 44px;
+    }
+
+    section.page {
+      display: none;
+    }
+
+    section.page:not(.active) h1::before {
+      content: none;
+    }
+
+    section.page.active {
+      display: block;
+    }
+
+    h1 {
+      font-family: var(--serif);
+      font-size: 40px;
+      line-height: 1.08;
+      letter-spacing: -.015em;
+      font-weight: 500;
+      margin: 0 0 12px;
+      color: var(--fg);
+    }
+
+    h1::before {
+      display: block;
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .14em;
+      color: var(--accent);
+      margin-bottom: 10px;
+    }
+
+    #page-junction h1::before { content: "01 — Junction"; }
+    #page-bands h1::before { content: "02 — Energy bands"; }
+    #page-diode h1::before { content: "03 — Diode"; }
+    #page-resistance h1::before { content: "04 — Resistance"; }
+
+    .lede {
+      font-family: var(--serif);
+      font-style: italic;
+      font-size: 18px;
+      line-height: 1.5;
+      color: var(--muted);
+      max-width: 640px;
+      margin: 0 0 30px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+
+    @media (min-width: 960px) {
+      .layout {
+        grid-template-columns: minmax(0, 1fr) 340px;
+      }
+    }
+
+    .col {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      min-width: 0;
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 20px;
+      background: var(--surface);
+      box-shadow: 0 1px 0 var(--line), 0 24px 48px -32px rgba(28, 25, 23, .45);
+      min-width: 0;
+    }
+
+    .card.flush {
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .card.flush > .card-h {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 0;
+    }
+
+    .card-h {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px 12px;
+      margin-bottom: 14px;
+    }
+
+    .label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      color: var(--muted);
+    }
+
+    .canvas-wrap {
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      overflow: hidden;
+      background: var(--soft);
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      background: transparent;
+      touch-action: none;
+    }
+
+    .pill {
+      font-family: var(--mono);
+      font-size: 12px;
+      padding: 2px 9px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      white-space: nowrap;
+      line-height: 1.4;
+    }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .btn {
+      border: 1px solid var(--line);
+      background: var(--surface);
+      color: var(--fg);
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-family: var(--sans);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color .15s ease, border-color .15s ease, transform .08s ease;
+      line-height: 1.35;
+    }
+
+    .btn:hover {
+      background: var(--soft);
+    }
+
+    .btn:active {
+      transform: scale(.96);
+    }
+
+    .btn.on {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--on);
+    }
+
+    .btn.on:hover {
+      background: var(--accent);
+    }
+
+    .btn.sm {
+      padding: 3px 9px;
+      font-size: 12px;
+      font-family: var(--mono);
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--accent);
+      cursor: pointer;
+      margin: 0;
+    }
+
+    .ctrl {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 12px 0;
+      border-top: 1px solid var(--line);
+    }
+
+    .ctrl.first {
+      border-top: none;
+      padding-top: 0;
+    }
+
+    .ctrl:last-child {
+      padding-bottom: 0;
+    }
+
+    .ctrl-h {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .ctrl-lbl {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .ctrl-val {
+      font-family: var(--mono);
+      font-weight: 700;
+      font-size: 13px;
+      color: var(--fg);
+    }
+
+    .ctrl-val-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .scale {
+      display: flex;
+      justify-content: space-between;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .chk-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 14px;
+      align-items: center;
+    }
+
+    .chk {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12.5px;
+      color: var(--muted);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .chk input[type="checkbox"] {
+      accent-color: var(--accent);
+      width: 14px;
+      height: 14px;
+      margin: 0;
+      cursor: pointer;
+    }
+
+    .switch-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      user-select: none;
+      font-size: 13px;
+      color: var(--fg);
+    }
+
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 36px;
+      height: 20px;
+      flex-shrink: 0;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+      position: absolute;
+    }
+
+    .switch-track {
+      position: absolute;
+      inset: 0;
+      background: var(--line);
+      border-radius: 999px;
+      transition: background-color .18s ease;
+    }
+
+    .switch-track::after {
+      content: "";
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #ffffff;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, .3);
+      transition: transform .18s ease;
+    }
+
+    .switch input:checked + .switch-track {
+      background: var(--accent);
+    }
+
+    .switch input:checked + .switch-track::after {
+      transform: translateX(16px);
+    }
+
+    .switch input:focus-visible + .switch-track {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 10px;
+    }
+
+    .stat {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px 12px;
+      background: var(--surface);
+      min-width: 0;
+    }
+
+    .stat-k {
+      font-size: 11.5px;
+      color: var(--muted);
+      margin-bottom: 2px;
+    }
+
+    .stat-v {
+      font-family: var(--mono);
+      font-weight: 700;
+      font-size: 13.5px;
+      color: var(--fg);
+      word-break: break-word;
+    }
+
+    .formula {
+      font-family: var(--mono);
+      font-size: 12.5px;
+      color: var(--muted);
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--soft);
+      word-break: break-word;
+    }
+
+    .formula.big {
+      text-align: center;
+      font-size: 14px;
+      font-family: inherit;
+      color: var(--fg);
+    }
+
+    .prose {
+      font-size: 13.5px;
+      color: var(--prose);
+    }
+
+    .prose p {
+      margin: 0 0 10px;
+    }
+
+    .prose p:last-child {
+      margin-bottom: 0;
+    }
+
+    .prose strong {
+      color: var(--fg);
+      font-weight: 600;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      font-size: 12px;
+      color: var(--muted);
+      gap: 8px 16px;
+      padding: 10px 14px;
+      border-top: 1px solid var(--line);
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .swatch {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 6px;
+      flex-shrink: 0;
+    }
+
+    .banner {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: wrap;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--soft);
+    }
+
+    .banner.show {
+      display: flex;
+    }
+
+    .banner-text {
+      min-width: 180px;
+      flex: 1 1 220px;
+    }
+
+    .banner-title {
+      font-weight: 700;
+      font-size: 13px;
+      color: var(--fg);
+    }
+
+    .banner-desc {
+      font-size: 12.5px;
+      color: var(--muted);
+    }
+
+    .prog-track {
+      flex: 1 1 120px;
+      min-width: 100px;
+      height: 4px;
+      border-radius: 999px;
+      background: var(--line);
+      overflow: hidden;
+    }
+
+    .prog-fill {
+      height: 100%;
+      width: 0%;
+      background: var(--accent);
+      transition: width .06s linear;
+    }
+
+    .toast {
+      font-size: 13px;
+      color: var(--fg);
+      min-height: 20px;
+      margin-top: 10px;
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    @media (max-width: 639px) {
+      .two-col {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .diode-panels {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      border-top: 1px solid var(--line);
+    }
+
+    .diode-panel {
+      padding: 14px 16px;
+      min-width: 0;
+    }
+
+    .diode-panel + .diode-panel {
+      border-left: 1px solid var(--line);
+    }
+
+    @media (max-width: 639px) {
+      .diode-panels {
+        grid-template-columns: 1fr;
+      }
+      .diode-panel + .diode-panel {
+        border-left: none;
+        border-top: 1px solid var(--line);
+      }
+    }
+
+    .kv-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 10px;
+    }
+
+    .kv-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      gap: 8px;
+    }
+
+    .kv-k {
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 12px;
+    }
+
+    .kv-v {
+      font-family: var(--mono);
+      font-weight: 700;
+      color: var(--fg);
+    }
+
+    #dSolver.ring {
+      box-shadow: inset 0 0 0 2px var(--accent), 0 1px 0 var(--line), 0 24px 48px -32px rgba(28, 25, 23, .45);
+    }
+
+    .solver-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .note-muted {
+      font-size: 12.5px;
+      color: var(--muted);
+      margin-top: 8px;
+    }
+
+    .tabs-top {
+      margin-bottom: 20px;
+    }
+
+    footer.site-ftr {
+      border-top: 1px solid var(--line);
+      padding: 18px 20px;
+      font-size: 12.5px;
+      color: var(--muted);
+    }
+
+    .ftr-inner {
+      max-width: 1240px;
+      margin: 0 auto;
+    }
+
+    @media (max-width: 519px) {
+      h1 {
+        font-size: 20px;
+      }
+      .lede {
+        font-size: 15.5px;
+        margin-bottom: 20px;
+      }
+      main.wrap {
+        padding: 20px 14px 36px;
+      }
+      .hdr-inner {
+        padding: 8px 14px;
+      }
+      nav.site-nav a {
+        padding: 8px 6px;
+        font-size: 12.5px;
+      }
+      .card {
+        padding: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-hdr">
+    <div class="hdr-inner">
+      <a href="#junction" class="brand">Semiconductor Lab</a>
+      <nav class="site-nav" aria-label="Primary navigation">
+        <a href="#junction" data-route="junction">PN junction</a>
+        <a href="#bands" data-route="bands">Energy bands</a>
+        <a href="#diode" data-route="diode">Diode lab</a>
+        <a href="#resistance" data-route="resistance">Resistance lab</a>
+      </nav>
+      <button type="button" id="themeToggle" class="btn sm">Dark mode</button>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <!-- ==================== PAGE 1: PN JUNCTION ==================== -->
+    <section id="page-junction" class="page" aria-labelledby="h-junction">
+      <h1 id="h-junction">PN Junction &amp; Depletion Physics</h1>
+      <p class="lede">Observe how majority diffusion and minority drift establish a built-in space-charge barrier—and how external bias tilts that balance.</p>
+
+      <div class="layout">
+        <div class="col">
+          <div class="btn-row" id="pnModes">
+            <button type="button" class="btn" data-mode="joining">1 · Joining</button>
+            <button type="button" class="btn on" data-mode="unbiased">2 · Unbiased</button>
+            <button type="button" class="btn" data-mode="forward">3 · Forward +0.65 V</button>
+            <button type="button" class="btn" data-mode="reverse">4 · Reverse −3.0 V</button>
+          </div>
+
+          <div id="pnBanner" class="banner" role="region" aria-label="Junction formation progress">
+            <div class="banner-text">
+              <div id="pnStageTitle" class="banner-title">Stage 1 · Blocks joined</div>
+              <div id="pnStageDesc" class="banner-desc">Majority carriers surge across the new boundary and recombine.</div>
+            </div>
+            <div class="prog-track" aria-hidden="true">
+              <div id="pnProgFill" class="prog-fill"></div>
+            </div>
+            <div class="btn-row">
+              <button type="button" id="pnPauseBtn" class="btn sm">Pause</button>
+              <button type="button" id="pnRestartBtn" class="btn sm">Restart</button>
+            </div>
+          </div>
+
+          <div class="card flush">
+            <div class="card-h">
+              <span class="label">Physical junction · space charge</span>
+              <div class="chk-group">
+                <label class="chk"><input type="checkbox" id="pnSpotlight" /> Spotlight minority carriers</label>
+                <label class="chk"><input type="checkbox" id="pnRecomb" checked /> Show recombination</label>
+              </div>
+            </div>
+            <canvas id="pnCanvas" style="height: 400px;" data-testid="pn-canvas"></canvas>
+            <div class="legend">
+              <span class="legend-item"><span class="swatch" style="background: var(--acceptor-bg); border: 1.5px solid var(--acceptor-bd);"></span>Acceptor ion (−, fixed in P)</span>
+              <span class="legend-item"><span class="swatch" style="background: var(--donor-bg); border: 1.5px solid var(--donor-bd);"></span>Donor ion (+, fixed in N)</span>
+              <span class="legend-item"><span class="swatch" style="background: var(--c-red);"></span>Hole</span>
+              <span class="legend-item"><span class="swatch" style="background: var(--c-blue);"></span>Electron</span>
+              <span id="pnWidthPill" class="pill" style="margin-left: auto;">W = 1.00 W₀</span>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-h">
+              <span class="label">Barrier potential and field</span>
+              <span id="pnBarPill" class="pill">V<sub>barrier</sub> = 0.70 V</span>
+            </div>
+            <div class="canvas-wrap">
+              <canvas id="barCanvas" style="height: 150px;" data-testid="bar-canvas"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <aside class="col">
+          <div class="card">
+            <div class="card-h">
+              <span class="label">Bias and parameters</span>
+              <button type="button" id="pnResetBtn" class="btn sm">Reset to 0 V</button>
+            </div>
+
+            <div class="ctrl first">
+              <div class="ctrl-h">
+                <label for="pnVdSlider" class="ctrl-lbl">Applied voltage V<sub>D</sub></label>
+                <div class="ctrl-val-group">
+                  <button type="button" id="pnVdDown" class="btn sm" aria-label="Decrease V_D by 0.05 V">−0.05</button>
+                  <span id="pnVdVal" class="ctrl-val">+0.00 V</span>
+                  <button type="button" id="pnVdUp" class="btn sm" aria-label="Increase V_D by 0.02 V">+0.02</button>
+                </div>
+              </div>
+              <input type="range" id="pnVdSlider" min="-100" max="100" step="1" value="0" />
+              <div class="scale"><span>−5.0 V</span><span>0</span><span>+0.80 V</span></div>
+            </div>
+
+            <div class="ctrl">
+              <div class="ctrl-h">
+                <label for="pnNSlider" class="ctrl-lbl">Ideality factor n</label>
+                <span id="pnNVal" class="ctrl-val">1.00</span>
+              </div>
+              <input type="range" id="pnNSlider" min="1" max="2" step="0.05" value="1" />
+            </div>
+
+            <div class="ctrl">
+              <div class="ctrl-h">
+                <label for="pnIsSlider" class="ctrl-lbl">Reverse saturation current I<sub>s</sub></label>
+                <span id="pnIsVal" class="ctrl-val">10 nA</span>
+              </div>
+              <input type="range" id="pnIsSlider" min="1" max="100" step="1" value="10" />
+            </div>
+
+            <div class="ctrl">
+              <div class="ctrl-h">
+                <label for="pnTSlider" class="ctrl-lbl">Temperature T</label>
+                <span id="pnTVal" class="ctrl-val">300 K · 25.85 mV</span>
+              </div>
+              <input type="range" id="pnTSlider" min="250" max="400" step="5" value="300" />
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-h">
+              <span class="label">Shockley equation</span>
+              <span id="pnStatePill" class="pill">Unbiased</span>
+            </div>
+            <div class="formula big" style="margin-bottom: 10px;">
+              I<sub>D</sub> = I<sub>s</sub> (e<sup>V<sub>D</sub> / nV<sub>T</sub></sup> − 1)
+            </div>
+            <div id="pnLiveFormula" class="formula" style="margin-bottom: 12px;">
+              I<sub>D</sub> = 10 nA × (e<sup>0.00 V / 0.0259 V</sup> − 1) = 0.00 nA
+            </div>
+            <div class="stats" style="margin-bottom: 12px;">
+              <div class="stat">
+                <div class="stat-k">I<sub>maj</sub> (diffusion)</div>
+                <div id="pnStatMaj" class="stat-v">10.00 nA</div>
+              </div>
+              <div class="stat">
+                <div class="stat-k">I<sub>s</sub> (drift)</div>
+                <div id="pnStatIs" class="stat-v">10.00 nA</div>
+              </div>
+              <div class="stat">
+                <div class="stat-k">Net I<sub>D</sub></div>
+                <div id="pnStatNet" class="stat-v">0.00 nA</div>
+              </div>
+            </div>
+            <div class="canvas-wrap">
+              <canvas id="pnIvCanvas" style="height: 220px;" data-testid="pn-iv-canvas"></canvas>
+            </div>
+          </div>
+
+          <div class="card">
+            <div id="pnExplain" class="prose"></div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ==================== PAGE 2: ENERGY BANDS ==================== -->
+    <section id="page-bands" class="page" aria-labelledby="h-bands">
+      <h1 id="h-bands">Energy Bands &amp; Carrier Excitation</h1>
+      <p class="lede">Explore how the forbidden energy gap separates conductors, semiconductors, and insulators—and how heat, light, or doping creates mobile charge.</p>
+
+      <div class="layout">
+        <div class="col">
+          <div class="btn-row" id="bandMaterials">
+            <button type="button" class="btn" data-mat="conductor">Conductor</button>
+            <button type="button" class="btn on" data-mat="semiconductor">Semiconductor</button>
+            <button type="button" class="btn" data-mat="insulator">Insulator</button>
+            <button type="button" class="btn" data-mat="ntype">n-type</button>
+          </div>
+
+          <div class="btn-row" id="bandSubRow">
+            <button type="button" class="btn sm" data-sub="Ge">Ge · 0.67 eV</button>
+            <button type="button" class="btn sm on" data-sub="Si">Si · 1.10 eV</button>
+            <button type="button" class="btn sm" data-sub="GaAs">GaAs · 1.43 eV</button>
+          </div>
+
+          <div class="card flush">
+            <div class="card-h">
+              <span id="bandTitle" class="label">Silicon (Si)</span>
+              <span id="bandEgPill" class="pill">E<sub>g</sub> = 1.10 eV</span>
+            </div>
+            <canvas id="bandCanvas" style="height: 440px; cursor: pointer;" data-testid="band-canvas"></canvas>
+            <div class="legend">
+              <span class="legend-item"><span class="swatch" style="background: var(--c-blue);"></span>Valence electron (bound)</span>
+              <span class="legend-item"><span class="swatch" style="background: var(--c-amber);"></span>Conduction electron (free)</span>
+              <span class="legend-item"><span class="swatch" style="border: 1.5px dashed var(--c-red); background: transparent;"></span>Hole</span>
+              <span class="legend-item"><span class="swatch" style="background: var(--c-violet);"></span>Donor level</span>
+            </div>
+          </div>
+
+          <div class="two-col">
+            <div class="card">
+              <div class="ctrl first">
+                <div class="ctrl-h">
+                  <label for="bandTSlider" class="ctrl-lbl">Temperature T</label>
+                  <span id="bandTVal" class="ctrl-val">300 K · 27 °C</span>
+                </div>
+                <input type="range" id="bandTSlider" min="0" max="800" step="10" value="300" />
+                <div class="scale"><span>0 K</span><span>300 K</span><span>800 K</span></div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="ctrl first">
+                <div class="ctrl-h">
+                  <label for="bandHvSlider" class="ctrl-lbl">Photon energy hν</label>
+                  <div class="ctrl-val-group">
+                    <span id="bandHvVal" class="ctrl-val">1.2 eV</span>
+                    <button type="button" id="bandPulseBtn" class="btn sm">Pulse</button>
+                  </div>
+                </div>
+                <input type="range" id="bandHvSlider" min="0.2" max="6" step="0.1" value="1.2" />
+                <div class="note-muted" style="margin-top: 2px;">Excites an electron when hν ≥ E<sub>g</sub>.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <aside class="col">
+          <div class="card">
+            <div class="card-h">
+              <span class="label">Electrical conduction</span>
+              <label class="switch-wrap">
+                <span class="switch">
+                  <input type="checkbox" id="bandVoltageToggle" />
+                  <span class="switch-track"></span>
+                </span>
+                <span>Apply voltage</span>
+              </label>
+            </div>
+            <div class="stats" style="margin-bottom: 10px;">
+              <div class="stat">
+                <div class="stat-k">Current I</div>
+                <div id="bandStatI" class="stat-v">0.00 mA</div>
+              </div>
+              <div class="stat">
+                <div class="stat-k">Free e⁻ / holes</div>
+                <div id="bandStatCarriers" class="stat-v">1 / 1</div>
+              </div>
+            </div>
+            <div id="bandCondNote" class="note-muted">Voltage off: electrons move randomly, with no net drift.</div>
+            <div id="bandCondType" class="note-muted" style="font-weight: 600; color: var(--fg); margin-top: 4px;">No net conduction</div>
+            <div id="bandToast" class="toast" aria-live="polite"></div>
+          </div>
+
+          <div class="card">
+            <div id="bandExplain" class="prose"></div>
+          </div>
+
+          <div class="card prose">
+            <div class="label" style="margin-bottom: 10px;">Key principles</div>
+            <p><strong>Discrete levels.</strong> Electrons occupy permitted energy states only, never inside the forbidden gap.</p>
+            <p><strong>Higher energy, farther out.</strong> Outer valence electrons have the most potential energy. Once freed into the conduction band, they sit at the highest energy.</p>
+            <p><strong>Conduction needs room.</strong> Current flows only when mobile charges sit in states next to empty, available levels.</p>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ==================== PAGE 3: DIODE LAB ==================== -->
+    <section id="page-diode" class="page" aria-labelledby="h-diode">
+      <h1 id="h-diode">Diode Characteristics &amp; Circuit Lab</h1>
+      <p class="lede">Compare the ideal switch approximation against real silicon, germanium, and gallium arsenide diodes across forward, sub-knee, and Zener breakdown regimes.</p>
+
+      <div class="btn-row tabs-top" id="diodeTabs" role="tablist" aria-label="Diode lab topics">
+        <button type="button" class="btn on" role="tab" aria-selected="true" data-tab="1">1 · Thermal voltage</button>
+        <button type="button" class="btn" role="tab" aria-selected="false" data-tab="2">2 · Ideal switch</button>
+        <button type="button" class="btn" role="tab" aria-selected="false" data-tab="3">3 · Ideal vs. actual</button>
+        <button type="button" class="btn" role="tab" aria-selected="false" data-tab="4">4 · Breakdown</button>
+      </div>
+
+      <div class="layout">
+        <div class="col">
+          <div class="card flush">
+            <div class="card-h">
+              <span class="label">Circuit · diode as switch</span>
+              <div class="btn-row" id="diodeViews">
+                <button type="button" class="btn sm on" data-view="compare">Compare</button>
+                <button type="button" class="btn sm" data-view="ideal">Ideal</button>
+                <button type="button" class="btn sm" data-view="actual">Actual</button>
+              </div>
+            </div>
+            <canvas id="circuitCanvas" style="height: 320px;" data-testid="circuit-canvas"></canvas>
+            <div class="diode-panels">
+              <div class="diode-panel">
+                <div class="card-h" style="margin-bottom: 4px;">
+                  <span style="display: inline-flex; align-items: center; font-weight: 600;">
+                    <span class="swatch" style="background: var(--c-sky);"></span>Ideal diode
+                  </span>
+                  <span id="dIdealPill" class="pill">Closed · short</span>
+                </div>
+                <div class="kv-list">
+                  <div class="kv-row"><span class="kv-k">V<sub>D</sub></span><span id="dIdealVd" class="kv-v">0.00 V</span></div>
+                  <div class="kv-row"><span class="kv-k">I<sub>D</sub></span><span id="dIdealId" class="kv-v">10.00 mA</span></div>
+                  <div class="kv-row"><span class="kv-k">R<sub>D</sub></span><span id="dIdealRd" class="kv-v">0 Ω</span></div>
+                </div>
+              </div>
+              <div class="diode-panel">
+                <div class="card-h" style="margin-bottom: 4px;">
+                  <span style="display: inline-flex; align-items: center; font-weight: 600;">
+                    <span id="dActualDot" class="swatch" style="background: var(--c-amber);"></span>
+                    <span id="dActualTitle">Actual diode (Si)</span>
+                  </span>
+                  <span id="dActualPill" class="pill">Knee ≈ 0.70 V</span>
+                </div>
+                <div class="kv-list">
+                  <div class="kv-row"><span class="kv-k">V<sub>D</sub></span><span id="dActualVd" class="kv-v">0.70 V</span></div>
+                  <div class="kv-row"><span class="kv-k">I<sub>D</sub></span><span id="dActualId" class="kv-v">8.61 mA</span></div>
+                  <div class="kv-row"><span class="kv-k">R<sub>D</sub></span><span id="dActualRd" class="kv-v">81 Ω</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="dSolver" class="card ring">
+            <div class="card-h">
+              <span class="label">Thermal voltage · live solver</span>
+              <button type="button" id="dLoad27Btn" class="btn sm">Load 27 °C example</button>
+            </div>
+            <div class="formula big">V<sub>T</sub> = k T<sub>K</sub> / q</div>
+            <div class="solver-grid">
+              <div id="dSolveTk" class="formula">T<sub>K</sub> = 273 + 27 °C = 300 K</div>
+              <div id="dSolveVt" class="formula">V<sub>T</sub> = (1.38×10⁻²³ × 300) / (1.6×10⁻¹⁹) = 25.875 mV</div>
+              <div id="dSolveApprox" class="formula">≈ 26 mV</div>
+            </div>
+          </div>
+        </div>
+
+        <aside class="col">
+          <div class="card flush">
+            <div class="card-h">
+              <span class="label">I<sub>D</sub> vs. V<sub>D</sub> · drag to sweep</span>
+              <label class="switch-wrap">
+                <span class="switch">
+                  <input type="checkbox" id="dIdealCurve" checked />
+                  <span class="switch-track"></span>
+                </span>
+                <span style="font-size: 12px; color: var(--muted);">Ideal curve</span>
+              </label>
+            </div>
+            <canvas id="diodeIvCanvas" style="height: 340px; cursor: crosshair;" data-testid="diode-iv-canvas"></canvas>
+            <div class="legend">
+              <span class="legend-item"><span class="swatch" style="background: var(--c-sky);"></span>Ideal</span>
+              <span class="legend-item"><span id="dLegActualSwatch" class="swatch" style="background: var(--c-amber);"></span><span id="dLegActualText">Actual · V<sub>K</sub> ≈ 0.70 V</span></span>
+              <span class="legend-item"><span class="swatch" style="background: var(--c-red); opacity: 0.5;"></span>Zener region</span>
+            </div>
+            <div style="padding: 0 14px 14px;">
+              <div class="stats">
+                <div class="stat">
+                  <div class="stat-k">Region</div>
+                  <div id="dStatRegion" class="stat-v">Forward conducting</div>
+                </div>
+                <div class="stat">
+                  <div class="stat-k">V<sub>T</sub></div>
+                  <div id="dStatVt" class="stat-v">25.9 mV</div>
+                </div>
+                <div class="stat">
+                  <div class="stat-k">Ideal I<sub>D</sub></div>
+                  <div id="dStatIdeal" class="stat-v">10.00 mA</div>
+                </div>
+                <div class="stat">
+                  <div class="stat-k">Actual I<sub>D</sub></div>
+                  <div id="dStatActual" class="stat-v">8.61 mA</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="ctrl first">
+              <div class="ctrl-h">
+                <label for="dVsSlider" class="ctrl-lbl">Source voltage V<sub>S</sub></label>
+                <div class="ctrl-val-group">
+                  <button type="button" id="dVsDown" class="btn sm" aria-label="Decrease V_S by 0.2 V">−0.2</button>
+                  <span id="dVsVal" class="ctrl-val">+5.00 V</span>
+                  <button type="button" id="dVsUp" class="btn sm" aria-label="Increase V_S by 0.2 V">+0.2</button>
+                </div>
+              </div>
+              <input type="range" id="dVsSlider" min="-100" max="100" step="1" value="50" />
+              <div class="scale"><span>−25 V</span><span>0</span><span>+10 V</span></div>
+              <div class="btn-row" id="dPresets" style="margin-top: 4px;">
+                <button type="button" class="btn sm" data-vs="-21.5">Breakdown −21.5 V</button>
+                <button type="button" class="btn sm" data-vs="-10">Reverse −10 V</button>
+                <button type="button" class="btn sm" data-vs="0.5">Sub-knee +0.5 V</button>
+                <button type="button" class="btn sm on" data-vs="5">Forward +5 V</button>
+              </div>
+            </div>
+
+            <div class="ctrl">
+              <div class="ctrl-h">
+                <label for="dTSlider" class="ctrl-lbl">Temperature</label>
+                <span id="dTVal" class="ctrl-val">27 °C (300 K)</span>
+              </div>
+              <input type="range" id="dTSlider" min="-55" max="150" step="1" value="27" />
+              <div class="scale"><span>−55 °C</span><span>27 °C</span><span>150 °C</span></div>
+            </div>
+
+            <div class="ctrl">
+              <div class="ctrl-h">
+                <label for="dBvSlider" class="ctrl-lbl">Breakdown voltage V<sub>BV</sub></label>
+                <span id="dBvVal" class="ctrl-val">−20.0 V</span>
+              </div>
+              <input type="range" id="dBvSlider" min="5" max="24" step="0.5" value="20" />
+              <div class="scale"><span>−5 V</span><span>−20 V</span><span>−24 V</span></div>
+            </div>
+
+            <div class="ctrl">
+              <div class="ctrl-h">
+                <span class="ctrl-lbl">Diode material</span>
+              </div>
+              <div class="btn-row" id="dMaterials">
+                <button type="button" class="btn sm on" data-mat="Si">Si · 0.7 V</button>
+                <button type="button" class="btn sm" data-mat="Ge">Ge · 0.3 V</button>
+                <button type="button" class="btn sm" data-mat="GaAs">GaAs · 1.2 V</button>
+              </div>
+              <div class="note-muted" style="margin-top: 2px;">Series limiting resistor R = 500 Ω.</div>
+            </div>
+
+            <div class="ctrl">
+              <label class="chk"><input type="checkbox" id="dMagRev" checked /> Magnify reverse I<sub>s</sub> and V<sub>BV</sub></label>
+            </div>
+          </div>
+
+          <div class="card">
+            <div id="dInsight" class="prose"></div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ==================== PAGE 4: DIODE RESISTANCE LEVELS ==================== -->
+    <section id="page-resistance" class="page" aria-labelledby="h-resistance">
+      <h1 id="h-resistance">Diode Resistance Levels</h1>
+      <p class="lede">Compare DC static resistance, small-signal AC dynamic resistance, and large-swing average AC resistance along the nonlinear diode curve.</p>
+
+      <div class="layout">
+        <div class="col">
+          <div class="btn-row" id="resModes">
+            <button type="button" class="btn" data-rmode="dc">1 · DC static (R<sub>D</sub>)</button>
+            <button type="button" class="btn on" data-rmode="ac">2 · AC dynamic (r<sub>d</sub>)</button>
+            <button type="button" class="btn" data-rmode="avg">3 · Average AC (r<sub>av</sub>)</button>
+          </div>
+
+          <div class="card flush">
+            <div class="card-h">
+              <span class="label">Nonlinear V–I curve · signal projection &amp; zoomed triangle</span>
+              <div class="btn-row">
+                <button type="button" id="resPlayBtn" class="btn sm on">Pause</button>
+                <button type="button" id="resResetPhaseBtn" class="btn sm">Reset θ</button>
+              </div>
+            </div>
+            <canvas id="resCanvas" style="height: 480px;" data-testid="res-canvas"></canvas>
+            <div class="legend">
+              <span class="legend-item"><span class="swatch" style="background: var(--c-sky);"></span>Q-point (DC)</span>
+              <span class="legend-item"><span class="swatch" style="background: var(--c-red);"></span>Instantaneous tracer</span>
+              <span class="legend-item"><span class="swatch" style="background: var(--c-amber);"></span>Tangent (r<sub>d</sub>)</span>
+              <span class="legend-item"><span class="swatch" style="background: var(--c-violet);"></span>Secant (r<sub>av</sub>)</span>
+              <span id="resPhasePill" class="pill" style="margin-left: auto;">θ = 0° · v_D = 0.640 V</span>
+            </div>
+          </div>
+
+          <div class="two-col">
+            <div class="card">
+              <div class="card-h" style="margin-bottom: 10px;">
+                <span class="label">Instantaneous waveform</span>
+                <span id="resInstPill" class="pill">Δv_d = +0.0 mV</span>
+              </div>
+              <div class="stats">
+                <div class="stat">
+                  <div class="stat-k">v<sub>D</sub>(t) = V<sub>DQ</sub> + ΔV sin θ</div>
+                  <div id="resStatVt" class="stat-v">0.640 V</div>
+                </div>
+                <div class="stat">
+                  <div class="stat-k">i<sub>D</sub>(t)</div>
+                  <div id="resStatIt" class="stat-v">2.80 mA</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-h" style="margin-bottom: 10px;">
+                <span class="label">Peak-to-peak excursion</span>
+                <span class="pill">ΔV<sub>d</sub> / ΔI<sub>d</sub></span>
+              </div>
+              <div class="stats">
+                <div class="stat">
+                  <div class="stat-k">ΔV<sub>d</sub> (p-p)</div>
+                  <div id="resStatDvp" class="stat-v">24.0 mV</div>
+                </div>
+                <div class="stat">
+                  <div class="stat-k">ΔI<sub>d</sub> (p-p)</div>
+                  <div id="resStatDip" class="stat-v">2.68 mA</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <aside class="col">
+          <div class="card">
+            <div class="card-h">
+              <span class="label">Operating point &amp; AC signal</span>
+              <button type="button" id="resDefaultBtn" class="btn sm">Reset defaults</button>
+            </div>
+
+            <div class="ctrl first">
+              <div class="ctrl-h">
+                <label for="resVqSlider" class="ctrl-lbl">DC bias V<sub>DQ</sub> (Q-point)</label>
+                <span id="resVqVal" class="ctrl-val">0.640 V</span>
+              </div>
+              <input type="range" id="resVqSlider" min="0.54" max="0.67" step="0.005" value="0.64" />
+              <div class="scale"><span>0.54 V</span><span>0.60 V</span><span>0.67 V</span></div>
+            </div>
+
+            <div class="ctrl">
+              <div class="ctrl-h">
+                <label for="resAmpSlider" class="ctrl-lbl">AC peak swing ΔV<sub>pk</sub></label>
+                <span id="resAmpVal" class="ctrl-val">12 mV (24 mV p-p)</span>
+              </div>
+              <input type="range" id="resAmpSlider" min="0" max="45" step="1" value="12" />
+              <div class="scale"><span>0 mV</span><span>22 mV</span><span>45 mV</span></div>
+            </div>
+
+            <div class="ctrl">
+              <div class="ctrl-h">
+                <label for="resSpeedSlider" class="ctrl-lbl">Phase speed ω</label>
+                <span id="resSpeedVal" class="ctrl-val">1.0×</span>
+              </div>
+              <input type="range" id="resSpeedSlider" min="0.2" max="2.5" step="0.1" value="1.0" />
+            </div>
+
+            <div class="ctrl">
+              <div class="ctrl-h">
+                <label for="resTSlider" class="ctrl-lbl">Temperature T</label>
+                <span id="resTVal" class="ctrl-val">300 K · 25.85 mV</span>
+              </div>
+              <input type="range" id="resTSlider" min="250" max="400" step="5" value="300" />
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-h">
+              <span class="label">Resistance levels</span>
+              <span id="resModePill" class="pill">AC dynamic</span>
+            </div>
+
+            <div class="formula big" id="resBigFormula" style="margin-bottom: 10px;">
+              r<sub>d</sub> = ΔV<sub>d</sub> / ΔI<sub>d</sub> = nV<sub>T</sub> / I<sub>D</sub> ≈ 26 mV / I<sub>D</sub>
+            </div>
+            <div id="resLiveFormula" class="formula" style="margin-bottom: 12px;">
+              r_d = 25.85 mV / 2.80 mA = 9.2 Ω
+            </div>
+
+            <div class="stats">
+              <div class="stat">
+                <div class="stat-k">DC static R<sub>D</sub></div>
+                <div id="resStatRd" class="stat-v">228.6 Ω</div>
+              </div>
+              <div class="stat">
+                <div class="stat-k">AC dynamic r<sub>d</sub></div>
+                <div id="resStatrd" class="stat-v">9.2 Ω</div>
+              </div>
+              <div class="stat">
+                <div class="stat-k">Average AC r<sub>av</sub></div>
+                <div id="resStatRav" class="stat-v">9.0 Ω</div>
+              </div>
+              <div class="stat">
+                <div class="stat-k">Q-point I<sub>DQ</sub></div>
+                <div id="resStatIdq" class="stat-v">2.80 mA</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div id="resExplain" class="prose"></div>
+          </div>
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-ftr">
+    <div class="ftr-inner">Interactive teaching simulations · PN junction, energy bands, and diode characteristics.</div>
+  </footer>
+
+  <script>
+    (() => {
+      'use strict';
+
+      // =====================================================
+      // PALETTE & THEME
+      // =====================================================
+      const PALETTES = {
+        light: {
+          bg: '#f4efe6',
+          surface: '#fffdf8',
+          fg: '#1c1917',
+          muted: '#78716c',
+          line: '#e5dccb',
+          soft: '#efe8da',
+          blue: '#0f766e',
+          red: '#c2410c',
+          green: '#15803d',
+          amber: '#b45309',
+          sky: '#0e7490',
+          violet: '#6d28d9',
+          slate: '#64748b',
+          pTint: 'rgba(194, 65, 12, 0.07)',
+          nTint: 'rgba(15, 118, 110, 0.07)',
+          deplFill: 'rgba(100, 116, 139, 0.45)',
+          acceptorFill: '#fecdd3',
+          donorFill: '#bae6fd',
+          cbGradTop: 'rgba(14, 116, 144, 0.12)',
+          cbGradBot: 'rgba(14, 116, 144, 0.01)',
+          vbGradTop: 'rgba(15, 118, 110, 0.10)',
+          vbGradBot: 'rgba(15, 118, 110, 0.03)',
+          gapFill: 'rgba(120, 113, 108, 0.08)',
+          orbitAlpha: 'rgba(15, 118, 110, 0.22)',
+          photon: '#ca8a04',
+          darkGlyph: '#1c1917',
+          barFill: 'rgba(15, 118, 110, 0.06)',
+          zenerFill: 'rgba(194, 65, 12, 0.08)',
+          grid: 'rgba(120, 113, 108, 0.20)',
+          pkgBody: '#d6cfc4',
+          pkgBand: '#78716c'
+        },
+        dark: {
+          bg: '#0f0d0b',
+          surface: '#191612',
+          fg: '#f5efe6',
+          muted: '#a8a29e',
+          line: '#2c2722',
+          soft: '#211d19',
+          blue: '#5eead4',
+          red: '#fb923c',
+          green: '#86efac',
+          amber: '#fbbf24',
+          sky: '#67e8f9',
+          violet: '#c4b5fd',
+          slate: '#94a3b8',
+          pTint: 'rgba(251, 146, 60, 0.09)',
+          nTint: 'rgba(94, 234, 212, 0.08)',
+          deplFill: 'rgba(148, 163, 184, 0.22)',
+          acceptorFill: '#451d10',
+          donorFill: '#0e3330',
+          cbGradTop: 'rgba(103, 232, 249, 0.14)',
+          cbGradBot: 'rgba(103, 232, 249, 0.01)',
+          vbGradTop: 'rgba(94, 234, 212, 0.12)',
+          vbGradBot: 'rgba(94, 234, 212, 0.03)',
+          gapFill: 'rgba(168, 162, 158, 0.06)',
+          orbitAlpha: 'rgba(94, 234, 212, 0.24)',
+          photon: '#facc15',
+          darkGlyph: '#0f0d0b',
+          barFill: 'rgba(94, 234, 212, 0.08)',
+          zenerFill: 'rgba(251, 146, 60, 0.12)',
+          grid: 'rgba(168, 162, 158, 0.16)',
+          pkgBody: '#36302a',
+          pkgBand: '#a8a29e'
+        }
+      };
+
+      const C = Object.assign({}, PALETTES.light);
+      let currentTheme = 'light';
+
+      const themeBtn = document.getElementById('themeToggle');
+      function applyTheme(t) {
+        currentTheme = t === 'dark' ? 'dark' : 'light';
+        if (currentTheme === 'dark') {
+          document.documentElement.dataset.theme = 'dark';
+          themeBtn.textContent = 'Light mode';
+        } else {
+          delete document.documentElement.dataset.theme;
+          themeBtn.textContent = 'Dark mode';
+        }
+        Object.assign(C, PALETTES[currentTheme]);
+        if (typeof updateDiodeThemeSwatches === 'function') updateDiodeThemeSwatches();
+      }
+
+      themeBtn.addEventListener('click', () => {
+        applyTheme(currentTheme === 'light' ? 'dark' : 'light');
+      });
+
+      // =====================================================
+      // CANVAS & DRAWING HELPERS
+      // =====================================================
+      function clamp(v, lo, hi) {
+        return Math.max(lo, Math.min(hi, v));
+      }
+
+      function fitCanvas(canvas) {
+        const rect = canvas.getBoundingClientRect();
+        const w = Math.max(1, rect.width);
+        const h = Math.max(1, rect.height);
+        const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+        const pw = Math.round(w * dpr);
+        const ph = Math.round(h * dpr);
+        if (canvas.width !== pw || canvas.height !== ph) {
+          canvas.width = pw;
+          canvas.height = ph;
+        }
+        const ctx = canvas.getContext('2d');
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        return { ctx, w, h };
+      }
+
+      function rrect(ctx, x, y, w, h, r) {
+        const rr = Math.min(r, Math.abs(w) / 2, Math.abs(h) / 2);
+        ctx.beginPath();
+        ctx.moveTo(x + rr, y);
+        ctx.arcTo(x + w, y, x + w, y + h, rr);
+        ctx.arcTo(x + w, y + h, x, y + h, rr);
+        ctx.arcTo(x, y + h, x, y, rr);
+        ctx.arcTo(x, y, x + w, y, rr);
+        ctx.closePath();
+      }
+
+      function txt(ctx, str, x, y, font, color, align = 'left', base = 'alphabetic') {
+        ctx.font = font;
+        ctx.fillStyle = color;
+        ctx.textAlign = align;
+        ctx.textBaseline = base;
+        ctx.fillText(str, x, y);
+      }
+
+      function arrow(ctx, x1, y1, x2, y2, color, lw = 1.6, head = 7) {
+        const dx = x2 - x1;
+        const dy = y2 - y1;
+        const len = Math.hypot(dx, dy);
+        if (len < 1) return;
+        const ang = Math.atan2(dy, dx);
+        ctx.save();
+        ctx.strokeStyle = color;
+        ctx.fillStyle = color;
+        ctx.lineWidth = lw;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(x2, y2);
+        ctx.lineTo(x2 - head * Math.cos(ang - 0.45), y2 - head * Math.sin(ang - 0.45));
+        ctx.lineTo(x2 - head * Math.cos(ang + 0.45), y2 - head * Math.sin(ang + 0.45));
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+      }
+
+      const F_SANS = 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
+      const F_MONO = 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace';
+
+      // =====================================================
+      // PURE PHYSICS MODELS (also exposed for unit tests)
+      // =====================================================
+      const K_B = 1.380649e-23;
+      const Q_E = 1.60217663e-19;
+
+      function computePNPhysics(params) {
+        const { vd, n, isNA, tempK, forming, progress } = params;
+        const vt = (K_B * tempK) / Q_E;
+        const isA = isNA * 1e-9;
+        const vEff = forming ? 0 : vd;
+        const ex = Math.exp(Math.min(35, vEff / (n * vt)));
+        const iMaj = isA * ex;
+        const iNet = isA * (ex - 1);
+        const v0 = 0.70;
+        const bar = forming ? v0 * progress : Math.max(0.05, v0 - vEff);
+        let wr;
+        if (forming) {
+          wr = progress;
+        } else if (vEff >= 0) {
+          wr = Math.max(0.24, Math.sqrt(bar / v0));
+        } else {
+          wr = 1 + 1.15 * (Math.abs(vEff) / 5);
+        }
+        return { vt, isA, vEff, ex, iMaj, iNet, v0, bar, wr };
+      }
+
+      function fmtCurrentAmps(amps) {
+        const a = Math.abs(amps);
+        if (a < 1e-6) return (amps * 1e9).toFixed(2) + ' nA';
+        if (a < 1e-3) return (amps * 1e6).toFixed(2) + ' µA';
+        if (a < 1) return (amps * 1e3).toFixed(2) + ' mA';
+        return amps.toFixed(2) + ' A';
+      }
+
+      const DIODE_MATERIALS = {
+        Si: { name: 'Si', vk: 0.70, isNA: 10, colorKey: 'amber' },
+        Ge: { name: 'Ge', vk: 0.30, isNA: 250, colorKey: 'green' },
+        GaAs: { name: 'GaAs', vk: 1.20, isNA: 1, colorKey: 'violet' }
+      };
+
+      const R_SERIES = 500;
+
+      function diodeThermal(tempC) {
+        const tk = 273 + tempC;
+        const vt = (1.38e-23 * tk) / 1.6e-19;
+        return { tk, vt };
+      }
+
+      function diodeKnee(mat, tempC) {
+        return Math.max(0.15, mat.vk - (tempC - 27) * 0.0018);
+      }
+
+      function diodeActualCurrent(vd, mat, tempC, vbv) {
+        const { vt } = diodeThermal(tempC);
+        const vk = diodeKnee(mat, tempC);
+        if (vd >= 0) {
+          return Math.max(
+            0,
+            10 * Math.exp((vd - vk) / (1.45 * vt)) - 10 * Math.exp(-vk / (1.45 * vt))
+          );
+        }
+        const isT = mat.isNA * 1e-6 * Math.pow(2, (tempC - 27) / 12);
+        let i = -isT * (1 - Math.exp(vd / vt));
+        const av = Math.abs(vd);
+        if (av > vbv - 0.35) {
+          const term = Math.max(0, (av - (vbv - 0.15)) / 0.35);
+          i += -18 * Math.pow(term, 2.6);
+        }
+        return i;
+      }
+
+      function solveDiodeCircuit(vs, mat, tempC, vbv) {
+        const ideal = vs > 0
+          ? { vd: 0, id: (vs / R_SERIES) * 1000 }
+          : { vd: vs, id: 0 };
+
+        const vk = diodeKnee(mat, tempC);
+        let vd;
+        if (vs >= 0) {
+          let lo = 0;
+          let hi = Math.min(vs, vk + 0.45);
+          for (let i = 0; i < 28; i++) {
+            const mid = (lo + hi) * 0.5;
+            const lhs = mid + (diodeActualCurrent(mid, mat, tempC, vbv) * R_SERIES) / 1000;
+            if (lhs < vs) lo = mid;
+            else hi = mid;
+          }
+          vd = (lo + hi) * 0.5;
+        } else if (vs > -vbv) {
+          vd = vs;
+        } else {
+          let lo = vs;
+          let hi = -vbv + 0.2;
+          for (let i = 0; i < 28; i++) {
+            const mid = (lo + hi) * 0.5;
+            const lhs = mid + (diodeActualCurrent(mid, mat, tempC, vbv) * R_SERIES) / 1000;
+            if (lhs > vs) hi = mid;
+            else lo = mid;
+          }
+          vd = (lo + hi) * 0.5;
+        }
+        const id = diodeActualCurrent(vd, mat, tempC, vbv);
+        return { ideal, actual: { vd, id }, vk };
+      }
+
+      // =====================================================
+      // PAGE 1: PN JUNCTION (#junction)
+      // =====================================================
+      const pnState = {
+        vd: 0,
+        n: 1,
+        isNA: 10,
+        tempK: 300,
+        forming: false,
+        paused: false,
+        progress: 0,
+        spotlight: false,
+        recomb: true,
+        lastExplainKey: '',
+        holes: [],
+        electrons: [],
+        minElectrons: [],
+        minHoles: [],
+        flashes: []
+      };
+
+      const pnCanvas = document.getElementById('pnCanvas');
+      const barCanvas = document.getElementById('barCanvas');
+      const pnIvCanvas = document.getElementById('pnIvCanvas');
+
+      const pnVdSlider = document.getElementById('pnVdSlider');
+      const pnNSlider = document.getElementById('pnNSlider');
+      const pnIsSlider = document.getElementById('pnIsSlider');
+      const pnTSlider = document.getElementById('pnTSlider');
+      const pnSpotlightChk = document.getElementById('pnSpotlight');
+      const pnRecombChk = document.getElementById('pnRecomb');
+
+      const pnModeBtns = Array.from(document.querySelectorAll('#pnModes .btn'));
+      const pnBanner = document.getElementById('pnBanner');
+      const pnStageTitle = document.getElementById('pnStageTitle');
+      const pnStageDesc = document.getElementById('pnStageDesc');
+      const pnProgFill = document.getElementById('pnProgFill');
+      const pnPauseBtn = document.getElementById('pnPauseBtn');
+      const pnRestartBtn = document.getElementById('pnRestartBtn');
+      const pnWidthPill = document.getElementById('pnWidthPill');
+      const pnBarPill = document.getElementById('pnBarPill');
+      const pnStatePill = document.getElementById('pnStatePill');
+      const pnLiveFormula = document.getElementById('pnLiveFormula');
+      const pnStatMaj = document.getElementById('pnStatMaj');
+      const pnStatIs = document.getElementById('pnStatIs');
+      const pnStatNet = document.getElementById('pnStatNet');
+      const pnExplain = document.getElementById('pnExplain');
+
+      function pnGeometry(w, h, wr) {
+        const bx = Math.max(45, w * 0.09);
+        const bw = w - 2 * bx;
+        const mx = bx + bw / 2;
+        const dh = bw * 0.135 * wr;
+        const dl = mx - dh;
+        const dr = mx + dh;
+        const re = bx + bw;
+        const by = 78;
+        const bh = Math.min(165, h * 0.43);
+        const wy = by + bh + 78;
+        return { bx, bw, mx, dh, dl, dr, re, by, bh, wy };
+      }
+
+      function pnVdToSlider(v) {
+        return v >= 0 ? Math.round((v / 0.8) * 100) : Math.round((v / 5) * 100);
+      }
+
+      function pnSliderToVd(s) {
+        return s >= 0 ? (s / 100) * 0.8 : (s / 100) * 5;
+      }
+
+      function pnModeName() {
+        if (pnState.forming) return 'joining';
+        if (pnState.vd > 0.05) return 'forward';
+        if (pnState.vd < -0.05) return 'reverse';
+        return 'unbiased';
+      }
+
+      function seedPNParticles() {
+        const rect = pnCanvas.getBoundingClientRect();
+        const w = Math.max(300, rect.width || 600);
+        const h = Math.max(300, rect.height || 400);
+        const phys = computePNPhysics(pnState);
+        const g = pnGeometry(w, h, phys.wr);
+
+        pnState.holes = [];
+        pnState.electrons = [];
+        pnState.minElectrons = [];
+        pnState.minHoles = [];
+        pnState.flashes = [];
+
+        const pSpan = Math.max(24, (pnState.forming ? g.mx : g.dl) - (g.bx + 18));
+        const nStart = pnState.forming ? g.mx : g.dr;
+        const nSpan = Math.max(24, (g.re - 18) - nStart);
+
+        for (let i = 0; i < 34; i++) {
+          pnState.holes.push({
+            x: g.bx + 14 + Math.random() * pSpan,
+            y: g.by + 10 + Math.random() * (g.bh - 20),
+            vx: (Math.random() - 0.5) * 1.6,
+            vy: (Math.random() - 0.5) * 1.4
+          });
+          pnState.electrons.push({
+            x: nStart + 4 + Math.random() * nSpan,
+            y: g.by + 10 + Math.random() * (g.bh - 20),
+            vx: (Math.random() - 0.5) * 1.6,
+            vy: (Math.random() - 0.5) * 1.4
+          });
+        }
+
+        for (let i = 0; i < 4; i++) {
+          pnState.minElectrons.push({
+            x: g.bx + 16 + Math.random() * Math.max(20, g.mx - g.bx - 24),
+            y: g.by + 14 + Math.random() * (g.bh - 28),
+            vx: 0.4 + Math.random() * 0.3,
+            vy: (Math.random() - 0.5) * 0.8
+          });
+          pnState.minHoles.push({
+            x: g.mx + 8 + Math.random() * Math.max(20, g.re - g.mx - 24),
+            y: g.by + 14 + Math.random() * (g.bh - 28),
+            vx: -(0.4 + Math.random() * 0.3),
+            vy: (Math.random() - 0.5) * 0.8
+          });
+        }
+      }
+
+      const PN_EXPLAIN = {
+        joining: '<p>Instant of joining. Holes in P and electrons in N diffuse across the new boundary and recombine. Each electron that leaves N uncovers a fixed <strong>donor ion (+)</strong>, and each hole that leaves P uncovers a fixed <strong>acceptor ion (−)</strong>. These ions build a field <strong>E</strong> from N to P that slows diffusion.</p>',
+        unbiased: '<p>The uncovered ions form a barrier field <strong>E</strong> from N to P. It blocks nearly all majority carriers, while minority carriers are swept across as a small drift current I<sub>s</sub>. Diffusion and drift cancel, so I<sub>D</sub> = I<sub>s</sub>(e<sup>0</sup> − 1) = 0 A.</p>',
+        forward: '<p>The external source opposes the built-in field and lowers the barrier. The depletion region narrows, majority carriers diffuse easily, and I<sub>D</sub> rises exponentially with voltage.</p>',
+        reverse: '<p>The external field adds to the barrier, so the depletion region widens. Diffusion falls to almost zero, leaving only the small reverse saturation current, I<sub>D</sub> ≈ −I<sub>s</sub>.</p>'
+      };
+
+      function syncPNUI() {
+        const mode = pnModeName();
+        pnModeBtns.forEach(b => b.classList.toggle('on', b.dataset.mode === mode));
+        pnBanner.classList.toggle('show', pnState.forming);
+        pnPauseBtn.textContent = pnState.paused ? 'Resume' : 'Pause';
+
+        const sign = pnState.vd > 0.004 ? '+' : (pnState.vd < -0.004 ? '−' : '+');
+        document.getElementById('pnVdVal').textContent = `${sign}${Math.abs(pnState.vd).toFixed(2)} V`;
+        pnVdSlider.value = String(pnVdToSlider(pnState.vd));
+        document.getElementById('pnNVal').textContent = pnState.n.toFixed(2);
+        document.getElementById('pnIsVal').textContent = `${pnState.isNA} nA`;
+
+        const phys = computePNPhysics(pnState);
+        document.getElementById('pnTVal').textContent = `${pnState.tempK} K · ${(phys.vt * 1000).toFixed(2)} mV`;
+
+        const stateLabels = {
+          joining: ['Joining', C.amber],
+          unbiased: ['Unbiased', C.violet],
+          forward: ['Forward bias', C.green],
+          reverse: ['Reverse bias', C.red]
+        };
+        const [stLabel, stColor] = stateLabels[mode];
+        pnStatePill.textContent = stLabel;
+        pnStatePill.style.color = stColor;
+        pnStatePill.style.borderColor = stColor;
+
+        const vStr = `${phys.vEff >= 0 ? '' : '−'}${Math.abs(phys.vEff).toFixed(2)} V`;
+        const nVt = (pnState.n * phys.vt).toFixed(4);
+        pnLiveFormula.innerHTML = `I<sub>D</sub> = ${pnState.isNA} nA × (e<sup>${vStr} / ${nVt} V</sup> − 1) = ${fmtCurrentAmps(phys.iNet)}`;
+
+        pnStatMaj.textContent = fmtCurrentAmps(phys.iMaj);
+        pnStatIs.textContent = fmtCurrentAmps(phys.isA);
+        pnStatNet.textContent = fmtCurrentAmps(phys.iNet);
+
+        pnWidthPill.innerHTML = `W = ${phys.wr.toFixed(2)} W<sub>0</sub>`;
+        pnBarPill.innerHTML = `V<sub>barrier</sub> = ${phys.bar.toFixed(2)} V`;
+
+        if (pnState.forming) {
+          const p = pnState.progress;
+          pnProgFill.style.width = `${(p * 100).toFixed(1)}%`;
+          let st = 'Stage 1 · Blocks joined';
+          let sd = 'Majority carriers surge across the new boundary and recombine.';
+          if (p >= 0.99) {
+            st = 'Equilibrium reached';
+            sd = 'The space-charge field balances diffusion. Net current is zero.';
+          } else if (p >= 0.68) {
+            st = 'Stage 3 · Field builds';
+            sd = 'Accumulated ions create field E (N → P) that slows diffusion.';
+          } else if (p >= 0.30) {
+            st = 'Stage 2 · Ions uncovered';
+            sd = 'Electrons leaving N expose + donor ions; holes leaving P expose − acceptor ions.';
+          }
+          pnStageTitle.textContent = st;
+          pnStageDesc.textContent = sd;
+        }
+
+        if (pnState.lastExplainKey !== mode) {
+          pnState.lastExplainKey = mode;
+          pnExplain.innerHTML = PN_EXPLAIN[mode];
+        }
+      }
+
+      function setPNMode(mode) {
+        if (mode === 'joining') {
+          pnState.forming = true;
+          pnState.paused = false;
+          pnState.progress = 0;
+          pnState.vd = 0;
+          seedPNParticles();
+        } else {
+          pnState.forming = false;
+          pnState.paused = false;
+          if (mode === 'unbiased') pnState.vd = 0;
+          else if (mode === 'forward') pnState.vd = 0.65;
+          else if (mode === 'reverse') pnState.vd = -3.0;
+          seedPNParticles();
+        }
+        syncPNUI();
+      }
+
+      pnModeBtns.forEach(btn => btn.addEventListener('click', () => setPNMode(btn.dataset.mode)));
+      document.getElementById('pnResetBtn').addEventListener('click', () => setPNMode('unbiased'));
+      pnPauseBtn.addEventListener('click', () => {
+        pnState.paused = !pnState.paused;
+        syncPNUI();
+      });
+      pnRestartBtn.addEventListener('click', () => setPNMode('joining'));
+
+      pnVdSlider.addEventListener('input', () => {
+        pnState.forming = false;
+        pnState.vd = pnSliderToVd(Number(pnVdSlider.value));
+        syncPNUI();
+      });
+
+      document.getElementById('pnVdDown').addEventListener('click', () => {
+        pnState.forming = false;
+        pnState.vd = clamp(Math.round((pnState.vd - 0.05) * 100) / 100, -5, 0.8);
+        syncPNUI();
+      });
+
+      document.getElementById('pnVdUp').addEventListener('click', () => {
+        pnState.forming = false;
+        pnState.vd = clamp(Math.round((pnState.vd + 0.02) * 100) / 100, -5, 0.8);
+        syncPNUI();
+      });
+
+      pnNSlider.addEventListener('input', () => {
+        pnState.n = Number(pnNSlider.value);
+        syncPNUI();
+      });
+      pnIsSlider.addEventListener('input', () => {
+        pnState.isNA = Number(pnIsSlider.value);
+        syncPNUI();
+      });
+      pnTSlider.addEventListener('input', () => {
+        pnState.tempK = Number(pnTSlider.value);
+        syncPNUI();
+      });
+      pnSpotlightChk.addEventListener('change', () => {
+        pnState.spotlight = pnSpotlightChk.checked;
+      });
+      pnRecombChk.addEventListener('change', () => {
+        pnState.recomb = pnRecombChk.checked;
+      });
+
+      function stepPN(dt) {
+        if (pnState.forming && !pnState.paused && pnState.progress < 1) {
+          pnState.progress = Math.min(1, pnState.progress + 0.14 * dt);
+          syncPNUI();
+        }
+        const rect = pnCanvas.getBoundingClientRect();
+        const w = Math.max(300, rect.width || 600);
+        const h = Math.max(300, rect.height || 400);
+        const phys = computePNPhysics(pnState);
+        const g = pnGeometry(w, h, phys.wr);
+        const ts = Math.sqrt(pnState.tempK / 300);
+        const dtScale = dt * 60;
+
+        const diffusing = pnState.forming
+          ? (!pnState.paused && pnState.progress < 0.88)
+          : (phys.vEff >= 0.25);
+
+        let push = 0;
+        if (!pnState.forming && phys.vEff > 0) {
+          push = Math.pow(phys.vEff / 0.75, 1.6) * 2.6;
+        } else if (pnState.forming && !pnState.paused) {
+          push = (1 - pnState.progress) * 2.2;
+        }
+
+        // Majority holes
+        for (const p of pnState.holes) {
+          p.x += (p.vx * ts + (diffusing ? push : 0)) * dtScale;
+          p.y += p.vy * ts * dtScale;
+          if (p.y < g.by + 8) { p.y = g.by + 8; p.vy = Math.abs(p.vy); }
+          if (p.y > g.by + g.bh - 8) { p.y = g.by + g.bh - 8; p.vy = -Math.abs(p.vy); }
+
+          if (diffusing) {
+            if (p.x > g.dr + 15 + Math.random() * 45) {
+              if (pnState.recomb) {
+                pnState.flashes.push({ x: p.x, y: p.y, r: 4, a: 0.9 });
+              }
+              p.x = g.bx + 8;
+              p.y = g.by + 8 + Math.random() * (g.bh - 16);
+            }
+            if (p.x < g.bx + 8) { p.x = g.bx + 8; p.vx = Math.abs(p.vx); }
+          } else {
+            const maxX = Math.max(g.bx + 20, g.dl - 8);
+            if (p.x < g.bx + 18) { p.x = g.bx + 18; p.vx = Math.abs(p.vx); }
+            if (p.x > maxX) { p.x = maxX; p.vx = -Math.abs(p.vx); }
+          }
+        }
+
+        // Majority electrons
+        for (const e of pnState.electrons) {
+          e.x += (e.vx * ts - (diffusing ? push : 0)) * dtScale;
+          e.y += e.vy * ts * dtScale;
+          if (e.y < g.by + 8) { e.y = g.by + 8; e.vy = Math.abs(e.vy); }
+          if (e.y > g.by + g.bh - 8) { e.y = g.by + g.bh - 8; e.vy = -Math.abs(e.vy); }
+
+          if (diffusing) {
+            if (e.x < g.dl - 15 - Math.random() * 45) {
+              if (pnState.recomb) {
+                pnState.flashes.push({ x: e.x, y: e.y, r: 4, a: 0.9 });
+              }
+              e.x = g.re - 8;
+              e.y = g.by + 8 + Math.random() * (g.bh - 16);
+            }
+            if (e.x > g.re - 8) { e.x = g.re - 8; e.vx = -Math.abs(e.vx); }
+          } else {
+            const minX = Math.min(g.re - 20, g.dr + 8);
+            if (e.x > g.re - 18) { e.x = g.re - 18; e.vx = -Math.abs(e.vx); }
+            if (e.x < minX) { e.x = minX; e.vx = Math.abs(e.vx); }
+          }
+        }
+
+        // Minority electrons (P -> N)
+        for (const me of pnState.minElectrons) {
+          const inDepl = me.x >= g.dl && me.x <= g.dr;
+          const speed = inDepl ? 2.2 * ts * (phys.vEff < 0 ? 1.6 : 1) : 0.65 * ts;
+          me.x += speed * dtScale;
+          me.y += me.vy * ts * dtScale;
+          if (me.y < g.by + 12) { me.y = g.by + 12; me.vy = Math.abs(me.vy); }
+          if (me.y > g.by + g.bh - 12) { me.y = g.by + g.bh - 12; me.vy = -Math.abs(me.vy); }
+          if (me.x > g.dr + 45) {
+            me.x = g.bx + 12 + Math.random() * Math.max(12, (g.dl - g.bx) * 0.4);
+            me.y = g.by + 12 + Math.random() * (g.bh - 24);
+          }
+        }
+
+        // Minority holes (N -> P)
+        for (const mh of pnState.minHoles) {
+          const inDepl = mh.x >= g.dl && mh.x <= g.dr;
+          const speed = inDepl ? 2.2 * ts * (phys.vEff < 0 ? 1.6 : 1) : 0.65 * ts;
+          mh.x -= speed * dtScale;
+          mh.y += mh.vy * ts * dtScale;
+          if (mh.y < g.by + 12) { mh.y = g.by + 12; mh.vy = Math.abs(mh.vy); }
+          if (mh.y > g.by + g.bh - 12) { mh.y = g.by + g.bh - 12; mh.vy = -Math.abs(mh.vy); }
+          if (mh.x < g.dl - 45) {
+            mh.x = g.re - 12 - Math.random() * Math.max(12, (g.re - g.dr) * 0.4);
+            mh.y = g.by + 12 + Math.random() * (g.bh - 24);
+          }
+        }
+
+        // Recombination flashes
+        for (let i = pnState.flashes.length - 1; i >= 0; i--) {
+          const f = pnState.flashes[i];
+          f.r += 18 * dt;
+          f.a -= 2.2 * dt;
+          if (f.a <= 0) pnState.flashes.splice(i, 1);
+        }
+      }
+
+      function drawPNScene() {
+        const { ctx, w, h } = fitCanvas(pnCanvas);
+        ctx.clearRect(0, 0, w, h);
+
+        const phys = computePNPhysics(pnState);
+        const g = pnGeometry(w, h, phys.wr);
+        const v = phys.vEff;
+
+        // 1. Top current arrows
+        const isLen = pnState.forming
+          ? 45 * pnState.progress
+          : (v > 0.05 ? 35 : (v < -0.05 ? 48 : 45));
+        const isLw = pnState.spotlight ? 2.5 : 1.5;
+        if (isLen > 2) {
+          arrow(ctx, g.mx + 15, 18, g.mx + 15 - isLen, 18, C.amber, isLw, 6);
+        }
+        txt(ctx, 'I_s · minority drift', g.mx + 22, 18, `600 11px ${F_SANS}`, C.amber, 'left', 'middle');
+
+        let majLen = 45;
+        if (pnState.forming) majLen = 85 * (1 - 0.55 * pnState.progress);
+        else if (v > 0.05) majLen = Math.min(115, 45 + (v / 0.75) * 70);
+        else if (v < -0.05) majLen = Math.max(8, 45 * Math.exp(2 * v));
+        const majLw = (v > 0.1 || pnState.forming) ? 2.5 : 1.5;
+        arrow(ctx, g.mx - 45, 34, g.mx - 45 + majLen, 34, C.green, majLw, 6);
+        txt(ctx, 'I_maj · diffusion', g.mx - 45 + majLen + 6, 34, `600 11px ${F_SANS}`, C.green, 'left', 'middle');
+
+        if (w >= 460) {
+          txt(ctx, 'I_D = I_maj − I_s', g.re, 26, `600 11.5px ${F_MONO}`, C.muted, 'right', 'middle');
+        }
+
+        // 2. Field arrow
+        const fy = g.by - 12;
+        if (pnState.forming && pnState.progress < 0.08) {
+          txt(ctx, 'No space-charge field yet (E = 0)', g.mx, fy - 6, `600 12px ${F_SANS}`, C.muted, 'center', 'bottom');
+        } else {
+          const span = clamp(g.dh * 0.85, 22, 85);
+          arrow(ctx, g.mx + span, fy, g.mx - span, fy, C.red, 2.2, 7);
+          txt(ctx, 'E · built-in field (N → P)', g.mx, fy - 8, `600 12px ${F_SANS}`, C.red, 'center', 'bottom');
+        }
+
+        // 3. Blocks
+        ctx.fillStyle = C.pTint;
+        ctx.fillRect(g.bx, g.by, g.bw / 2, g.bh);
+        ctx.fillStyle = C.nTint;
+        ctx.fillRect(g.mx, g.by, g.bw / 2, g.bh);
+
+        if (g.dr - g.dl > 3) {
+          ctx.fillStyle = C.deplFill;
+          ctx.fillRect(g.dl, g.by, g.dr - g.dl, g.bh);
+          ctx.save();
+          ctx.strokeStyle = C.slate;
+          ctx.lineWidth = 1;
+          ctx.setLineDash([4, 4]);
+          ctx.beginPath();
+          ctx.moveTo(g.dl, g.by);
+          ctx.lineTo(g.dl, g.by + g.bh);
+          ctx.moveTo(g.dr, g.by);
+          ctx.lineTo(g.dr, g.by + g.bh);
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        ctx.strokeStyle = C.line;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(g.mx, g.by);
+        ctx.lineTo(g.mx, g.by + g.bh);
+        ctx.stroke();
+
+        ctx.strokeStyle = C.slate;
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(g.bx, g.by, g.bw, g.bh);
+
+        // Contacts
+        ctx.fillStyle = C.slate;
+        ctx.fillRect(g.bx - 7, g.by + 18, 7, g.bh - 36);
+        ctx.fillRect(g.re, g.by + 18, 7, g.bh - 36);
+
+        txt(ctx, 'P region', g.bx + g.bw * 0.25, g.by + g.bh + 22, `600 13px ${F_SANS}`, C.red, 'center', 'middle');
+        txt(ctx, 'N region', g.bx + g.bw * 0.75, g.by + g.bh + 22, `600 13px ${F_SANS}`, C.blue, 'center', 'middle');
+        if (g.dr - g.dl > 40) {
+          txt(ctx, 'depletion region', g.mx, g.by + g.bh + 39, `500 11px ${F_SANS}`, C.muted, 'center', 'middle');
+        }
+
+        // 4. Fixed ions
+        if (g.dh >= 8) {
+          const cols = clamp(Math.floor((g.dh - 4) / 20), 1, 5);
+          const rowStep = (g.bh - 20) / 6;
+          for (let k = 0; k < cols; k++) {
+            const off = 11 + 20 * k;
+            if (off > g.dh - 6) break;
+            for (let r = 0; r < 6; r++) {
+              const iy = g.by + 10 + (r + 0.5) * rowStep;
+              // Acceptor (-) on P
+              ctx.beginPath();
+              ctx.arc(g.mx - off, iy, 7.5, 0, Math.PI * 2);
+              ctx.fillStyle = C.acceptorFill;
+              ctx.fill();
+              ctx.lineWidth = 1.4;
+              ctx.strokeStyle = C.red;
+              ctx.stroke();
+              txt(ctx, '−', g.mx - off, iy + 0.5, `700 11px ${F_MONO}`, C.red, 'center', 'middle');
+
+              // Donor (+) on N
+              ctx.beginPath();
+              ctx.arc(g.mx + off, iy, 7.5, 0, Math.PI * 2);
+              ctx.fillStyle = C.donorFill;
+              ctx.fill();
+              ctx.lineWidth = 1.4;
+              ctx.strokeStyle = C.blue;
+              ctx.stroke();
+              txt(ctx, '+', g.mx + off, iy + 0.5, `700 11px ${F_MONO}`, C.blue, 'center', 'middle');
+            }
+          }
+        }
+
+        // 5. Carriers
+        ctx.save();
+        if (pnState.spotlight) ctx.globalAlpha = 0.25;
+        for (const p of pnState.holes) {
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, 4.5, 0, Math.PI * 2);
+          ctx.fillStyle = C.red;
+          ctx.fill();
+          txt(ctx, '+', p.x, p.y + 0.5, `700 9px ${F_MONO}`, '#ffffff', 'center', 'middle');
+        }
+        for (const e of pnState.electrons) {
+          ctx.beginPath();
+          ctx.arc(e.x, e.y, 4.5, 0, Math.PI * 2);
+          ctx.fillStyle = C.blue;
+          ctx.fill();
+          txt(ctx, '−', e.x, e.y + 0.5, `700 9px ${F_MONO}`, '#ffffff', 'center', 'middle');
+        }
+        ctx.restore();
+
+        // Minority carriers
+        const minR = pnState.spotlight ? 6 : 4.5;
+        for (const me of pnState.minElectrons) {
+          ctx.save();
+          if (pnState.spotlight) {
+            ctx.shadowColor = C.amber;
+            ctx.shadowBlur = 10;
+          }
+          ctx.beginPath();
+          ctx.arc(me.x, me.y, minR, 0, Math.PI * 2);
+          ctx.fillStyle = C.blue;
+          ctx.fill();
+          ctx.lineWidth = 1.8;
+          ctx.strokeStyle = C.amber;
+          ctx.stroke();
+          ctx.restore();
+          txt(ctx, '−', me.x, me.y + 0.5, `700 9px ${F_MONO}`, '#ffffff', 'center', 'middle');
+        }
+        for (const mh of pnState.minHoles) {
+          ctx.save();
+          if (pnState.spotlight) {
+            ctx.shadowColor = C.amber;
+            ctx.shadowBlur = 10;
+          }
+          ctx.beginPath();
+          ctx.arc(mh.x, mh.y, minR, 0, Math.PI * 2);
+          ctx.fillStyle = C.red;
+          ctx.fill();
+          ctx.lineWidth = 1.8;
+          ctx.strokeStyle = C.amber;
+          ctx.stroke();
+          ctx.restore();
+          txt(ctx, '+', mh.x, mh.y + 0.5, `700 9px ${F_MONO}`, '#ffffff', 'center', 'middle');
+        }
+
+        // Recombination flashes
+        if (pnState.recomb) {
+          for (const f of pnState.flashes) {
+            ctx.save();
+            ctx.globalAlpha = clamp(f.a, 0, 1);
+            ctx.shadowColor = C.amber;
+            ctx.shadowBlur = 8;
+            ctx.strokeStyle = C.amber;
+            ctx.lineWidth = 1.8;
+            ctx.beginPath();
+            ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.restore();
+          }
+        }
+
+        // 6. External circuit
+        const cy = g.by + g.bh / 2;
+        const lx = g.bx - 28;
+        const rx = g.re + 28;
+        ctx.strokeStyle = C.slate;
+        ctx.lineWidth = 1.6;
+        ctx.beginPath();
+        ctx.moveTo(g.bx - 7, cy);
+        ctx.lineTo(lx, cy);
+        ctx.lineTo(lx, g.wy);
+        ctx.lineTo(g.mx - 24, g.wy);
+        ctx.moveTo(g.mx + 24, g.wy);
+        ctx.lineTo(rx, g.wy);
+        ctx.lineTo(rx, cy);
+        ctx.lineTo(g.re + 7, cy);
+        ctx.stroke();
+
+        if (pnState.forming || Math.abs(v) < 0.005) {
+          rrect(ctx, g.mx - 58, g.wy - 14, 116, 28, 6);
+          ctx.fillStyle = C.surface;
+          ctx.fill();
+          ctx.strokeStyle = C.line;
+          ctx.lineWidth = 1.2;
+          ctx.stroke();
+          txt(ctx, 'Unbiased · 0 V', g.mx, g.wy, `600 11.5px ${F_MONO}`, C.muted, 'center', 'middle');
+        } else {
+          const fwd = v > 0;
+          const dxs = [-14, -4, 6, 16];
+          ctx.strokeStyle = C.slate;
+          ctx.beginPath();
+          ctx.moveTo(g.mx - 24, g.wy);
+          ctx.lineTo(g.mx - 14, g.wy);
+          ctx.moveTo(g.mx + 16, g.wy);
+          ctx.lineTo(g.mx + 24, g.wy);
+          ctx.stroke();
+
+          dxs.forEach((dx, idx) => {
+            const isLong = fwd ? (idx === 0 || idx === 2) : (idx === 1 || idx === 3);
+            const hh = isLong ? 13 : 7;
+            ctx.strokeStyle = isLong ? C.green : C.sky;
+            ctx.lineWidth = isLong ? 2.4 : 2;
+            ctx.beginPath();
+            ctx.moveTo(g.mx + dx, g.wy - hh);
+            ctx.lineTo(g.mx + dx, g.wy + hh);
+            ctx.stroke();
+          });
+
+          const vTxt = `V_D = ${v >= 0 ? '+' : '−'}${Math.abs(v).toFixed(2)} V`;
+          txt(ctx, vTxt, g.mx, g.wy + 24, `600 11px ${F_MONO}`, C.fg, 'center', 'middle');
+
+          if (fwd) {
+            txt(ctx, '+', g.bx - 16, cy - 12, `700 14px ${F_MONO}`, C.green, 'center', 'middle');
+            txt(ctx, '−', g.re + 16, cy - 12, `700 14px ${F_MONO}`, C.sky, 'center', 'middle');
+          } else {
+            txt(ctx, '−', g.bx - 16, cy - 12, `700 14px ${F_MONO}`, C.red, 'center', 'middle');
+            txt(ctx, '+', g.re + 16, cy - 12, `700 14px ${F_MONO}`, C.green, 'center', 'middle');
+          }
+
+          if (v > 0.1) {
+            arrow(ctx, g.mx - 90, g.wy - 12, g.mx - 54, g.wy - 12, C.green, 2, 6);
+            txt(ctx, 'I_D', g.mx - 72, g.wy - 22, `600 11px ${F_MONO}`, C.green, 'center', 'middle');
+            arrow(ctx, g.mx + 54, g.wy - 12, g.mx + 90, g.wy - 12, C.green, 2, 6);
+            txt(ctx, 'I_D', g.mx + 72, g.wy - 22, `600 11px ${F_MONO}`, C.green, 'center', 'middle');
+          } else if (v < -0.1) {
+            arrow(ctx, g.mx + 84, g.wy - 12, g.mx + 48, g.wy - 12, C.amber, 2, 6);
+            txt(ctx, 'I_s', g.mx + 66, g.wy - 22, `600 11px ${F_MONO}`, C.amber, 'center', 'middle');
+          }
+        }
+      }
+
+      function drawBarrierPlot() {
+        const { ctx, w, h } = fitCanvas(barCanvas);
+        ctx.clearRect(0, 0, w, h);
+
+        const phys = computePNPhysics(pnState);
+        const bx = Math.max(45, w * 0.09);
+        const bw = w - 2 * bx;
+        const mx = bx + bw / 2;
+        const re = bx + bw;
+        const base = bw * 0.135;
+        const dh = base * phys.wr;
+        const dl = mx - dh;
+        const dr = mx + dh;
+
+        const pY = h - 24;
+        const sc = h - 46;
+        const uY = pY - (0.70 / 2.8) * sc;
+        const nY = pY - clamp(phys.bar / 2.8, 0.04, 1) * sc;
+
+        // Guides
+        ctx.save();
+        ctx.strokeStyle = C.line;
+        ctx.lineWidth = 1;
+        ctx.setLineDash([3, 3]);
+        ctx.beginPath();
+        ctx.moveTo(dl, 12);
+        ctx.lineTo(dl, h - 10);
+        ctx.moveTo(dr, 12);
+        ctx.lineTo(dr, h - 10);
+        ctx.stroke();
+
+        // Unbiased reference curve
+        ctx.strokeStyle = C.muted;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.moveTo(bx, pY);
+        ctx.lineTo(mx - base, pY);
+        ctx.bezierCurveTo(mx, pY, mx, uY, mx + base, uY);
+        ctx.lineTo(re, uY);
+        ctx.stroke();
+        ctx.restore();
+
+        // Fill under active curve
+        ctx.beginPath();
+        ctx.moveTo(bx, h - 10);
+        ctx.lineTo(bx, pY);
+        ctx.lineTo(dl, pY);
+        ctx.bezierCurveTo(mx, pY, mx, nY, dr, nY);
+        ctx.lineTo(re, nY);
+        ctx.lineTo(re, h - 10);
+        ctx.closePath();
+        ctx.fillStyle = C.barFill;
+        ctx.fill();
+
+        // Active curve
+        const grad = ctx.createLinearGradient(bx, 0, re, 0);
+        grad.addColorStop(0, C.red);
+        grad.addColorStop(0.5, C.violet);
+        grad.addColorStop(1, C.blue);
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.moveTo(bx, pY);
+        ctx.lineTo(dl, pY);
+        ctx.bezierCurveTo(mx, pY, mx, nY, dr, nY);
+        ctx.lineTo(re, nY);
+        ctx.stroke();
+
+        txt(ctx, 'P', bx, pY - 8, `700 12px ${F_SANS}`, C.red, 'left', 'bottom');
+        let bLabel = 'equilibrium barrier V₀';
+        if (pnState.forming) bLabel = 'forming barrier';
+        else if (phys.vEff > 0.05) bLabel = 'reduced barrier';
+        else if (phys.vEff < -0.05) bLabel = 'increased barrier';
+        txt(ctx, `${bLabel} · ${phys.bar.toFixed(2)} V`, re, Math.max(20, nY - 8), `600 11.5px ${F_MONO}`, C.fg, 'right', 'bottom');
+      }
+
+      function drawPNIvPlot() {
+        const { ctx, w, h } = fitCanvas(pnIvCanvas);
+        ctx.clearRect(0, 0, w, h);
+
+        const ox = w * 0.46;
+        const oy = h * 0.68;
+        const rW = w - ox - 20;
+        const lW = ox - 24;
+        const tH = oy - 22;
+        const bH = h - oy - 18;
+
+        function mapX(v) {
+          return v >= 0 ? ox + (v / 0.85) * rW : ox - (Math.abs(v) / 5) * lW;
+        }
+        function mapY(iAmps) {
+          if (iAmps >= 0) {
+            const imA = iAmps * 1e3;
+            return oy - Math.min(1.05, imA / 25) * tH;
+          }
+          const inA = Math.abs(iAmps) * 1e9;
+          return oy + Math.min(0.92, inA / 120) * bH;
+        }
+
+        // Axes
+        ctx.strokeStyle = C.muted;
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.moveTo(16, oy);
+        ctx.lineTo(w - 14, oy);
+        ctx.moveTo(ox, 14);
+        ctx.lineTo(ox, h - 10);
+        ctx.stroke();
+
+        txt(ctx, '+V_D (0.8 V)', w - 12, oy + 12, `500 10.5px ${F_MONO}`, C.muted, 'right', 'top');
+        txt(ctx, '−V_D (−5 V)', 14, oy + 12, `500 10.5px ${F_MONO}`, C.muted, 'left', 'top');
+        txt(ctx, 'I_D (mA)', ox + 6, 14, `500 10.5px ${F_MONO}`, C.muted, 'left', 'top');
+        txt(ctx, '−I_s (nA scale)', ox + 6, h - 12, `500 10.5px ${F_MONO}`, C.muted, 'left', 'bottom');
+
+        const phys = computePNPhysics(pnState);
+        const vt = phys.vt;
+        const isA = phys.isA;
+
+        // Curve
+        ctx.strokeStyle = C.sky;
+        ctx.lineWidth = 2.2;
+        ctx.beginPath();
+        let started = false;
+        for (let v = -5; v <= 0.001; v += 0.1) {
+          const vv = Math.min(0, v);
+          const i = isA * (Math.exp(Math.min(35, vv / (pnState.n * vt))) - 1);
+          const px = mapX(vv);
+          const py = mapY(i);
+          if (!started) { ctx.moveTo(px, py); started = true; }
+          else ctx.lineTo(px, py);
+        }
+        for (let v = 0.01; v <= 0.851; v += 0.01) {
+          const i = isA * (Math.exp(Math.min(35, v / (pnState.n * vt))) - 1);
+          const px = mapX(v);
+          const py = mapY(i);
+          ctx.lineTo(px, py);
+          if (i * 1e3 > 27) break;
+        }
+        ctx.stroke();
+
+        // Operating point dot
+        const opX = mapX(phys.vEff);
+        const opY = mapY(phys.iNet);
+        let dotCol = C.violet;
+        if (!pnState.forming && phys.vEff > 0.05) dotCol = C.green;
+        else if (!pnState.forming && phys.vEff < -0.05) dotCol = C.red;
+
+        ctx.save();
+        ctx.strokeStyle = dotCol;
+        ctx.lineWidth = 1;
+        ctx.setLineDash([3, 3]);
+        ctx.beginPath();
+        ctx.moveTo(opX, oy);
+        ctx.lineTo(opX, opY);
+        ctx.lineTo(ox, opY);
+        ctx.stroke();
+        ctx.restore();
+
+        ctx.beginPath();
+        ctx.arc(opX, opY, 5.5, 0, Math.PI * 2);
+        ctx.fillStyle = dotCol;
+        ctx.fill();
+        ctx.lineWidth = 1.5;
+        ctx.strokeStyle = C.surface;
+        ctx.stroke();
+      }
+
+      // =====================================================
+      // PAGE 2: ENERGY BANDS (#bands)
+      // =====================================================
+      const bandState = {
+        mat: 'semiconductor',
+        sub: 'Si',
+        tempK: 300,
+        hv: 1.2,
+        voltageOn: false,
+        electrons: [],
+        holes: [],
+        donors: [],
+        packets: [],
+        toastTimer: null
+      };
+
+      const bandCanvas = document.getElementById('bandCanvas');
+      const bandSubRow = document.getElementById('bandSubRow');
+      const bandTitle = document.getElementById('bandTitle');
+      const bandEgPill = document.getElementById('bandEgPill');
+      const bandTSlider = document.getElementById('bandTSlider');
+      const bandTVal = document.getElementById('bandTVal');
+      const bandHvSlider = document.getElementById('bandHvSlider');
+      const bandHvVal = document.getElementById('bandHvVal');
+      const bandVoltageToggle = document.getElementById('bandVoltageToggle');
+      const bandStatI = document.getElementById('bandStatI');
+      const bandStatCarriers = document.getElementById('bandStatCarriers');
+      const bandCondNote = document.getElementById('bandCondNote');
+      const bandCondType = document.getElementById('bandCondType');
+      const bandToast = document.getElementById('bandToast');
+      const bandExplain = document.getElementById('bandExplain');
+
+      const SUB_INFO = {
+        Ge: { title: 'Germanium (Ge)', name: 'Ge', eg: 0.67 },
+        Si: { title: 'Silicon (Si)', name: 'Silicon (Si)', eg: 1.10 },
+        GaAs: { title: 'Gallium arsenide (GaAs)', name: 'Gallium arsenide (GaAs)', eg: 1.43 }
+      };
+
+      function bandEg() {
+        if (bandState.mat === 'conductor') return 0;
+        if (bandState.mat === 'insulator') return 5.5;
+        if (bandState.mat === 'ntype') return 1.10;
+        return SUB_INFO[bandState.sub].eg;
+      }
+
+      function bandLayout(w) {
+        const bandX = 62;
+        const stdW = Math.min(300, w * 0.42);
+        const hasLattice = (w - (bandX + stdW + 40)) >= 120;
+        const bandW = hasLattice ? stdW : Math.min(300, w - bandX - 18);
+        const cbTop = 40;
+        const cbH = 80;
+        const cbBot = cbTop + cbH;
+        const eg = bandEg();
+        let gap;
+        if (bandState.mat === 'conductor') gap = -10;
+        else if (bandState.mat === 'insulator') gap = 150;
+        else gap = Math.min(130, Math.max(40, eg * 75));
+        const vbTop = cbBot + gap;
+        const vbH = 90;
+        const vbBot = vbTop + vbH;
+        const donorY = cbBot + 18;
+        return { bandX, bandW, cbTop, cbH, cbBot, gap, vbTop, vbH, vbBot, donorY, eg, hasLattice };
+      }
+
+      function showBandToast(msg) {
+        bandToast.textContent = msg;
+        if (bandState.toastTimer) clearTimeout(bandState.toastTimer);
+        bandState.toastTimer = setTimeout(() => {
+          bandToast.textContent = '';
+        }, 2600);
+      }
+
+      function seedBandParticles() {
+        const rect = bandCanvas.getBoundingClientRect();
+        const w = Math.max(300, rect.width || 600);
+        const L = bandLayout(w);
+
+        bandState.electrons = [];
+        bandState.holes = [];
+        bandState.donors = [];
+        bandState.packets = [];
+
+        for (let i = 0; i < 32; i++) {
+          const isCond = bandState.mat === 'conductor' && i < 18;
+          const y = isCond
+            ? L.cbTop + 12 + Math.random() * (L.cbH - 24)
+            : L.vbTop + 12 + Math.random() * (L.vbH - 24);
+          bandState.electrons.push({
+            x: L.bandX + 10 + Math.random() * (L.bandW - 20),
+            y,
+            ty: y,
+            vx: (Math.random() - 0.5) * 1.1,
+            vy: (Math.random() - 0.5) * 0.9,
+            state: isCond ? 'c' : 'v',
+            laser: false,
+            revertAt: 0
+          });
+        }
+
+        if (bandState.mat === 'ntype') {
+          const spacing = (L.bandW - 50) / 7;
+          for (let i = 0; i < 8; i++) {
+            const sx = L.bandX + 25 + i * spacing;
+            bandState.donors.push({
+              sx,
+              sy: L.donorY,
+              x: sx,
+              y: L.donorY,
+              ty: L.donorY,
+              vx: (Math.random() - 0.5) * 1.0,
+              vy: (Math.random() - 0.5) * 0.8,
+              ionized: false
+            });
+          }
+        }
+      }
+
+      function syncBandMeta() {
+        document.querySelectorAll('#bandMaterials .btn').forEach(b => {
+          b.classList.toggle('on', b.dataset.mat === bandState.mat);
+        });
+        document.querySelectorAll('#bandSubRow .btn').forEach(b => {
+          b.classList.toggle('on', b.dataset.sub === bandState.sub);
+        });
+        bandSubRow.style.display = bandState.mat === 'semiconductor' ? 'flex' : 'none';
+
+        const eg = bandEg();
+        if (bandState.mat === 'conductor') {
+          bandTitle.textContent = 'Conductor · Cu / Al';
+          bandEgPill.innerHTML = 'E<sub>g</sub> = 0 eV (overlap)';
+          bandExplain.innerHTML = '<p><strong>Conductor.</strong> The conduction and valence bands overlap, so there is no forbidden gap. Thermal motion alone places many electrons in the conduction band, giving high conductivity at ordinary temperatures.</p>';
+        } else if (bandState.mat === 'insulator') {
+          bandTitle.textContent = 'Insulator · diamond / quartz';
+          bandEgPill.innerHTML = 'E<sub>g</sub> = 5.50 eV';
+          bandExplain.innerHTML = '<p><strong>Insulator.</strong> The gap exceeds 5 eV, far more than thermal energy can bridge. Electrons stay bound unless an extreme photon or field frees them, and the resulting breakdown is usually permanent.</p>';
+        } else if (bandState.mat === 'ntype') {
+          bandTitle.textContent = 'n-type semiconductor';
+          bandEgPill.innerHTML = 'E<sub>g</sub> = 1.10 eV';
+          bandExplain.innerHTML = '<p><strong>n-type semiconductor.</strong> Pentavalent donor atoms add energy levels about 0.05 eV below the conduction band. Room temperature is enough to ionize nearly every donor, flooding the conduction band with free electrons.</p>';
+        } else {
+          const info = SUB_INFO[bandState.sub];
+          bandTitle.textContent = info.title;
+          bandEgPill.innerHTML = `E<sub>g</sub> = ${info.eg.toFixed(2)} eV`;
+          bandExplain.innerHTML = `<p>${info.name} has a band gap of ${info.eg.toFixed(2)} eV. At 0 K every electron sits in the valence band and the material is an insulator. Heat, or light with hν ≥ E<sub>g</sub>, lifts electrons into the conduction band and leaves holes behind.</p>`;
+        }
+
+        bandTVal.textContent = `${bandState.tempK} K · ${Math.round(bandState.tempK - 273)} °C`;
+        bandHvVal.textContent = `${bandState.hv.toFixed(1)} eV`;
+      }
+
+      document.querySelectorAll('#bandMaterials .btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          bandState.mat = btn.dataset.mat;
+          syncBandMeta();
+          seedBandParticles();
+        });
+      });
+
+      document.querySelectorAll('#bandSubRow .btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          bandState.sub = btn.dataset.sub;
+          syncBandMeta();
+          seedBandParticles();
+        });
+      });
+
+      bandTSlider.addEventListener('input', () => {
+        bandState.tempK = Number(bandTSlider.value);
+        syncBandMeta();
+      });
+
+      bandHvSlider.addEventListener('input', () => {
+        bandState.hv = Number(bandHvSlider.value);
+        syncBandMeta();
+      });
+
+      bandVoltageToggle.addEventListener('change', () => {
+        bandState.voltageOn = bandVoltageToggle.checked;
+      });
+
+      function exciteElectron(L, laserFlag, nowMs) {
+        const candidates = bandState.electrons.filter(e => e.state === 'v');
+        if (candidates.length === 0) return false;
+        const pick = candidates[Math.floor(Math.random() * candidates.length)];
+        pick.state = 'c';
+        pick.laser = laserFlag;
+        pick.revertAt = laserFlag ? nowMs + 5000 : 0;
+        pick.ty = L.cbTop + 14 + Math.random() * (L.cbH - 28);
+        bandState.holes.push({
+          x: pick.x,
+          y: clamp(pick.y, L.vbTop + 10, L.vbBot - 10),
+          vx: (Math.random() - 0.5) * 0.9,
+          vy: (Math.random() - 0.5) * 0.7,
+          laser: laserFlag,
+          eRef: pick
+        });
+        return true;
+      }
+
+      document.getElementById('bandPulseBtn').addEventListener('click', () => {
+        const rect = bandCanvas.getBoundingClientRect();
+        const w = Math.max(300, rect.width || 600);
+        const L = bandLayout(w);
+        const startY = (L.cbBot + L.vbTop) / 2;
+        const targetX = L.bandX + L.bandW / 2;
+        const targetY = L.vbTop + 25;
+        bandState.packets.push({
+          x: 10,
+          y: startY,
+          sx: 10,
+          sy: startY,
+          tx: targetX,
+          ty: targetY,
+          progress: 0,
+          hv: bandState.hv
+        });
+      });
+
+      bandCanvas.addEventListener('click', (ev) => {
+        const rect = bandCanvas.getBoundingClientRect();
+        const x = ev.clientX - rect.left;
+        const y = ev.clientY - rect.top;
+        const L = bandLayout(rect.width);
+        if (x >= L.bandX && x <= L.bandX + L.bandW && y >= L.vbTop - 10 && y <= L.vbBot + 10) {
+          if (exciteElectron(L, true, performance.now())) {
+            showBandToast('Electron excited by direct click.');
+          }
+        }
+      });
+
+      function stepBands(dt, nowMs) {
+        const rect = bandCanvas.getBoundingClientRect();
+        const w = Math.max(300, rect.width || 600);
+        const L = bandLayout(w);
+        const T = bandState.tempK;
+        const eg = L.eg;
+        const dtScale = dt * 60;
+
+        // Revert expired laser excitations (unless conductor)
+        if (bandState.mat !== 'conductor') {
+          for (const e of bandState.electrons) {
+            if (e.laser && e.state === 'c' && e.revertAt > 0 && nowMs >= e.revertAt) {
+              e.state = 'v';
+              e.laser = false;
+              e.revertAt = 0;
+              e.ty = L.vbTop + 12 + Math.random() * (L.vbH - 24);
+              const hi = bandState.holes.findIndex(h => h.eRef === e);
+              if (hi >= 0) bandState.holes.splice(hi, 1);
+              else if (bandState.holes.length > 0) bandState.holes.pop();
+            }
+          }
+        }
+
+        // Thermal excitation rules
+        if (bandState.mat === 'conductor') {
+          for (let i = 0; i < bandState.electrons.length; i++) {
+            const e = bandState.electrons[i];
+            if (i < 20 && e.state !== 'c') {
+              e.state = 'c';
+              e.ty = L.cbTop + 12 + Math.random() * (L.cbH - 24);
+            }
+          }
+        } else if (bandState.mat === 'insulator') {
+          for (const e of bandState.electrons) {
+            if (!e.laser && e.state === 'c') {
+              e.state = 'v';
+              e.ty = L.vbTop + 12 + Math.random() * (L.vbH - 24);
+            }
+          }
+          bandState.holes = bandState.holes.filter(h => h.laser);
+        } else {
+          const kT = 8.617e-5 * T;
+          const maxEx = T > 40 ? Math.round(Math.exp(-eg / (kT * 15)) * 16) : 0;
+          const nonLaserCond = bandState.electrons.filter(e => e.state === 'c' && !e.laser);
+          if (nonLaserCond.length < maxEx) {
+            const need = maxEx - nonLaserCond.length;
+            for (let k = 0; k < need; k++) {
+              const cand = bandState.electrons.find(e => e.state === 'v' && !e.laser);
+              if (!cand) break;
+              cand.state = 'c';
+              cand.ty = L.cbTop + 12 + Math.random() * (L.cbH - 24);
+              bandState.holes.push({
+                x: cand.x,
+                y: clamp(cand.y, L.vbTop + 10, L.vbBot - 10),
+                vx: (Math.random() - 0.5) * 0.9,
+                vy: (Math.random() - 0.5) * 0.7,
+                laser: false,
+                eRef: cand
+              });
+            }
+          } else if (nonLaserCond.length > maxEx) {
+            let excess = nonLaserCond.length - maxEx;
+            for (const e of nonLaserCond) {
+              if (excess <= 0) break;
+              e.state = 'v';
+              e.ty = L.vbTop + 12 + Math.random() * (L.vbH - 24);
+              const hi = bandState.holes.findIndex(h => h.eRef === e || !h.laser);
+              if (hi >= 0) bandState.holes.splice(hi, 1);
+              excess--;
+            }
+          }
+        }
+
+        // n-type donor ionization
+        let ionizedCount = 0;
+        if (bandState.mat === 'ntype') {
+          const targetIon = T > 50 ? Math.min(8, Math.ceil((T / 180) * 8)) : 0;
+          bandState.donors.forEach((d, idx) => {
+            const shouldIon = idx < targetIon;
+            if (shouldIon && !d.ionized) {
+              d.ionized = true;
+              d.ty = L.cbTop + 12 + Math.random() * (L.cbH - 24);
+            } else if (!shouldIon && d.ionized) {
+              d.ionized = false;
+              d.ty = L.donorY;
+              d.x = d.sx;
+            }
+            if (d.ionized) ionizedCount++;
+          });
+        }
+
+        // Motion
+        const vib = Math.min(2.5, (T / 300) * 0.9);
+        const drift = bandState.voltageOn ? 1.8 : 0;
+
+        for (const e of bandState.electrons) {
+          e.y += (e.ty - e.y) * Math.min(1, 0.12 * dtScale);
+          if (e.state === 'c') {
+            e.x += (e.vx * vib + drift) * dtScale;
+            e.ty += e.vy * vib * 0.6 * dtScale;
+            if (e.ty < L.cbTop + 10) { e.ty = L.cbTop + 10; e.vy = Math.abs(e.vy); }
+            if (e.ty > L.cbBot - 10) { e.ty = L.cbBot - 10; e.vy = -Math.abs(e.vy); }
+            if (e.x > L.bandX + L.bandW - 8) {
+              if (bandState.voltageOn) e.x = L.bandX + 8;
+              else { e.x = L.bandX + L.bandW - 8; e.vx = -Math.abs(e.vx); }
+            }
+            if (e.x < L.bandX + 8) { e.x = L.bandX + 8; e.vx = Math.abs(e.vx); }
+          } else {
+            e.x += e.vx * vib * dtScale;
+            e.ty += e.vy * vib * 0.6 * dtScale;
+            if (e.ty < L.vbTop + 10) { e.ty = L.vbTop + 10; e.vy = Math.abs(e.vy); }
+            if (e.ty > L.vbBot - 10) { e.ty = L.vbBot - 10; e.vy = -Math.abs(e.vy); }
+            if (e.x < L.bandX + 8) { e.x = L.bandX + 8; e.vx = Math.abs(e.vx); }
+            if (e.x > L.bandX + L.bandW - 8) { e.x = L.bandX + L.bandW - 8; e.vx = -Math.abs(e.vx); }
+          }
+        }
+
+        for (const d of bandState.donors) {
+          d.y += (d.ty - d.y) * Math.min(1, 0.12 * dtScale);
+          if (d.ionized) {
+            d.x += (d.vx * vib + drift) * dtScale;
+            d.ty += d.vy * vib * 0.6 * dtScale;
+            if (d.ty < L.cbTop + 10) { d.ty = L.cbTop + 10; d.vy = Math.abs(d.vy); }
+            if (d.ty > L.cbBot - 10) { d.ty = L.cbBot - 10; d.vy = -Math.abs(d.vy); }
+            if (d.x > L.bandX + L.bandW - 8) {
+              if (bandState.voltageOn) d.x = L.bandX + 8;
+              else { d.x = L.bandX + L.bandW - 8; d.vx = -Math.abs(d.vx); }
+            }
+            if (d.x < L.bandX + 8) { d.x = L.bandX + 8; d.vx = Math.abs(d.vx); }
+          } else {
+            d.x = d.sx + Math.sin(nowMs * 0.008 + d.sx) * vib * 1.2;
+          }
+        }
+
+        for (const hObj of bandState.holes) {
+          hObj.x += (hObj.vx * vib - (bandState.voltageOn ? 0.55 : 0)) * dtScale;
+          hObj.y += hObj.vy * vib * dtScale;
+          if (hObj.y < L.vbTop + 10) { hObj.y = L.vbTop + 10; hObj.vy = Math.abs(hObj.vy); }
+          if (hObj.y > L.vbBot - 10) { hObj.y = L.vbBot - 10; hObj.vy = -Math.abs(hObj.vy); }
+          if (hObj.x < L.bandX + 8) {
+            if (bandState.voltageOn) hObj.x = L.bandX + L.bandW - 8;
+            else { hObj.x = L.bandX + 8; hObj.vx = Math.abs(hObj.vx); }
+          }
+          if (hObj.x > L.bandX + L.bandW - 8) { hObj.x = L.bandX + L.bandW - 8; hObj.vx = -Math.abs(hObj.vx); }
+        }
+
+        // Photon packets
+        for (let i = bandState.packets.length - 1; i >= 0; i--) {
+          const pk = bandState.packets[i];
+          pk.progress += 1.45 * dt;
+          pk.x = pk.sx + (pk.tx - pk.sx) * pk.progress;
+          pk.y = pk.sy + (pk.ty - pk.sy) * pk.progress;
+          const dist = Math.hypot(pk.tx - pk.x, pk.ty - pk.y);
+          if (dist < 15 || pk.progress >= 1) {
+            if (pk.hv >= eg) {
+              exciteElectron(L, true, nowMs);
+              showBandToast(`Absorbed: hν = ${pk.hv.toFixed(1)} eV ≥ E_g = ${eg.toFixed(2)} eV, electron promoted.`);
+            } else {
+              showBandToast(`Transmitted: hν = ${pk.hv.toFixed(1)} eV is below E_g = ${eg.toFixed(2)} eV.`);
+            }
+            bandState.packets.splice(i, 1);
+          }
+        }
+
+        // Meters update
+        const condElectrons = bandState.electrons.filter(e => e.state === 'c').length;
+        const free = condElectrons + ionizedCount;
+        const holesN = bandState.holes.length;
+        const unit = bandState.mat === 'conductor' ? 'A' : 'mA';
+
+        bandStatCarriers.textContent = `${free} / ${holesN}`;
+        if (!bandState.voltageOn) {
+          bandStatI.textContent = `0.00 ${unit}`;
+          bandCondNote.textContent = 'Voltage off: electrons move randomly, with no net drift.';
+          bandCondType.textContent = 'No net conduction';
+        } else if (free === 0) {
+          bandStatI.textContent = `0.00 ${unit}`;
+          bandCondNote.textContent = 'No free carriers in the conduction band.';
+          bandCondType.textContent = 'Blocked · insulating state';
+        } else {
+          bandStatI.textContent = `${(free * 1.42).toFixed(2)} ${unit}`;
+          bandCondNote.textContent = `${free} free carriers drifting under the field.`;
+          bandCondType.textContent = bandState.mat === 'conductor' ? 'Low-resistance conductor' : 'Active conduction';
+        }
+      }
+
+      function drawBandScene(nowMs) {
+        const { ctx, w, h } = fitCanvas(bandCanvas);
+        ctx.clearRect(0, 0, w, h);
+
+        const L = bandLayout(w);
+
+        // Energy axis
+        const ax = L.bandX - 18;
+        arrow(ctx, ax, L.vbBot + 25, ax, 35, C.muted, 1.4, 6);
+        txt(ctx, 'Energy', ax - 6, 30, `600 10.5px ${F_SANS}`, C.muted, 'right', 'bottom');
+        txt(ctx, 'higher', ax - 6, 48, `500 10px ${F_SANS}`, C.muted, 'right', 'middle');
+        txt(ctx, 'lower', ax - 6, L.vbBot + 16, `500 10px ${F_SANS}`, C.muted, 'right', 'middle');
+
+        // Conduction band
+        const cbGrad = ctx.createLinearGradient(0, L.cbTop, 0, L.cbBot);
+        cbGrad.addColorStop(0, C.cbGradTop);
+        cbGrad.addColorStop(1, C.cbGradBot);
+        ctx.fillStyle = cbGrad;
+        ctx.fillRect(L.bandX, L.cbTop, L.bandW, L.cbH);
+        ctx.strokeStyle = C.sky;
+        ctx.lineWidth = 1.4;
+        ctx.strokeRect(L.bandX, L.cbTop, L.bandW, L.cbH);
+        txt(ctx, 'Conduction band', L.bandX + 10, L.cbTop + 14, `600 12px ${F_SANS}`, C.sky, 'left', 'middle');
+        txt(ctx, 'Electrons free to carry current', L.bandX + 10, L.cbTop + 29, `400 10.5px ${F_SANS}`, C.muted, 'left', 'middle');
+
+        // Valence band
+        const vbGrad = ctx.createLinearGradient(0, L.vbTop, 0, L.vbBot);
+        vbGrad.addColorStop(0, C.vbGradTop);
+        vbGrad.addColorStop(1, C.vbGradBot);
+        ctx.fillStyle = vbGrad;
+        ctx.fillRect(L.bandX, L.vbTop, L.bandW, L.vbH);
+        ctx.strokeStyle = C.blue;
+        ctx.lineWidth = 1.4;
+        ctx.strokeRect(L.bandX, L.vbTop, L.bandW, L.vbH);
+        txt(ctx, 'Valence band', L.bandX + 10, L.vbTop + 14, `600 12px ${F_SANS}`, C.blue, 'left', 'middle');
+        txt(ctx, 'Electrons bound to atoms', L.bandX + 10, L.vbTop + 29, `400 10.5px ${F_SANS}`, C.muted, 'left', 'middle');
+
+        // Gap or overlap
+        if (bandState.mat === 'conductor') {
+          ctx.save();
+          ctx.strokeStyle = C.amber;
+          ctx.lineWidth = 1.4;
+          ctx.setLineDash([4, 3]);
+          ctx.strokeRect(L.bandX, L.cbBot - 10, L.bandW, 14);
+          ctx.restore();
+          txt(ctx, 'Bands overlap · no forbidden gap', L.bandX + L.bandW / 2, L.cbBot + 4, `600 11px ${F_SANS}`, C.amber, 'center', 'top');
+        } else {
+          ctx.fillStyle = C.gapFill;
+          ctx.fillRect(L.bandX, L.cbBot, L.bandW, L.gap);
+          const rx = L.bandX + L.bandW - 12;
+          ctx.strokeStyle = C.violet;
+          ctx.lineWidth = 1.4;
+          ctx.beginPath();
+          ctx.moveTo(rx, L.cbBot + 3);
+          ctx.lineTo(rx, L.vbTop - 3);
+          ctx.moveTo(rx - 4, L.cbBot + 3);
+          ctx.lineTo(rx + 4, L.cbBot + 3);
+          ctx.moveTo(rx - 4, L.vbTop - 3);
+          ctx.lineTo(rx + 4, L.vbTop - 3);
+          ctx.stroke();
+
+          const midGap = (L.cbBot + L.vbTop) / 2;
+          txt(ctx, `Forbidden gap · E_g = ${L.eg.toFixed(2)} eV`, L.bandX + L.bandW / 2, midGap - (L.gap > 40 ? 6 : 0), `600 11px ${F_SANS}`, C.violet, 'center', 'middle');
+          if (L.gap > 40) {
+            txt(ctx, 'No electron states exist here', L.bandX + L.bandW / 2, midGap + 10, `400 10px ${F_SANS}`, C.muted, 'center', 'middle');
+          }
+        }
+
+        // n-type donor line
+        if (bandState.mat === 'ntype') {
+          ctx.save();
+          ctx.strokeStyle = C.violet;
+          ctx.lineWidth = 1.4;
+          ctx.setLineDash([5, 4]);
+          ctx.beginPath();
+          ctx.moveTo(L.bandX + 4, L.donorY);
+          ctx.lineTo(L.bandX + L.bandW - 4, L.donorY);
+          ctx.stroke();
+          ctx.restore();
+          txt(ctx, 'Donor level · E_d ≈ 0.05 eV below CB', L.bandX + L.bandW - 8, L.donorY - 5, `600 10px ${F_SANS}`, C.violet, 'right', 'bottom');
+        }
+
+        // Holes
+        for (const hObj of bandState.holes) {
+          ctx.save();
+          ctx.strokeStyle = C.red;
+          ctx.lineWidth = 1.5;
+          ctx.setLineDash([2.5, 2]);
+          ctx.beginPath();
+          ctx.arc(hObj.x, hObj.y, 4.5, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.restore();
+          txt(ctx, '+', hObj.x, hObj.y + 0.5, `700 9px ${F_MONO}`, C.red, 'center', 'middle');
+        }
+
+        // Electrons
+        for (const e of bandState.electrons) {
+          ctx.beginPath();
+          if (e.state === 'c') {
+            ctx.arc(e.x, e.y, 4.5, 0, Math.PI * 2);
+            ctx.fillStyle = C.amber;
+            ctx.fill();
+            txt(ctx, '−', e.x, e.y + 0.5, `700 9px ${F_MONO}`, C.darkGlyph, 'center', 'middle');
+          } else {
+            ctx.arc(e.x, e.y, 4, 0, Math.PI * 2);
+            ctx.fillStyle = C.blue;
+            ctx.fill();
+            txt(ctx, '−', e.x, e.y + 0.5, `700 8.5px ${F_MONO}`, '#ffffff', 'center', 'middle');
+          }
+        }
+
+        // Donors
+        for (const d of bandState.donors) {
+          ctx.beginPath();
+          ctx.arc(d.x, d.y, 4, 0, Math.PI * 2);
+          ctx.fillStyle = d.ionized ? C.amber : C.violet;
+          ctx.fill();
+          txt(ctx, '−', d.x, d.y + 0.5, `700 8.5px ${F_MONO}`, d.ionized ? C.darkGlyph : '#ffffff', 'center', 'middle');
+        }
+
+        // Photon packets
+        for (const pk of bandState.packets) {
+          ctx.save();
+          ctx.shadowColor = C.photon;
+          ctx.shadowBlur = 10;
+          ctx.strokeStyle = C.photon;
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          for (let dx = -16; dx <= 16; dx += 2) {
+            const px = pk.x + dx;
+            const py = pk.y + Math.sin((dx + nowMs * 0.04) * 0.5) * 4.5;
+            if (dx === -16) ctx.moveTo(px, py);
+            else ctx.lineTo(px, py);
+          }
+          ctx.stroke();
+          ctx.restore();
+          txt(ctx, `hν = ${pk.hv.toFixed(1)} eV`, pk.x, pk.y - 12, `600 11px ${F_MONO}`, C.photon, 'center', 'bottom');
+        }
+
+        // Atomic lattice panel
+        const latX = L.bandX + L.bandW + 40;
+        const latW = w - latX - 16;
+        if (L.hasLattice && latW >= 120) {
+          const latY = L.cbTop;
+          const latH = (L.vbBot + 10) - L.cbTop;
+          rrect(ctx, latX, latY, latW, latH, 10);
+          ctx.fillStyle = C.surface;
+          ctx.fill();
+          ctx.strokeStyle = C.line;
+          ctx.lineWidth = 1.2;
+          ctx.stroke();
+
+          txt(ctx, 'Atomic lattice', latX + 14, latY + 18, `600 12px ${F_SANS}`, C.fg, 'left', 'middle');
+
+          const cols = clamp(Math.floor(latW / 90), 2, 3);
+          const rows = 2;
+          const gridTop = latY + 42;
+          const gridH = latH - 76;
+          const dx = latW / (cols + 0.4);
+          const dy = gridH / (rows + 0.2);
+
+          for (let r = 0; r < rows; r++) {
+            for (let c = 0; c < cols; c++) {
+              const axCenter = latX + (c + 0.7) * dx;
+              const ayCenter = gridTop + (r + 0.6) * dy;
+
+              ctx.save();
+              ctx.strokeStyle = C.orbitAlpha;
+              ctx.lineWidth = 1.2;
+              ctx.setLineDash([3, 3]);
+              ctx.beginPath();
+              ctx.arc(axCenter, ayCenter, 22, 0, Math.PI * 2);
+              ctx.stroke();
+              ctx.restore();
+
+              const isDonorAtom = bandState.mat === 'ntype' && r === 0 && c === cols - 1;
+              ctx.beginPath();
+              ctx.arc(axCenter, ayCenter, 7, 0, Math.PI * 2);
+              ctx.fillStyle = isDonorAtom ? C.violet : C.muted;
+              ctx.fill();
+
+              // Orbiting valence dot
+              const ang = nowMs * 0.0018 + r * 2 + c * 1.3;
+              const ox = axCenter + Math.cos(ang) * 22;
+              const oy = ayCenter + Math.sin(ang) * 22;
+              ctx.beginPath();
+              ctx.arc(ox, oy, 3, 0, Math.PI * 2);
+              ctx.fillStyle = C.blue;
+              ctx.fill();
+            }
+          }
+
+          if (bandState.voltageOn) {
+            txt(ctx, 'Applied field: electrons drift (− → +)', latX + latW / 2, latY + latH - 16, `600 11px ${F_SANS}`, C.sky, 'center', 'middle');
+          } else {
+            txt(ctx, 'Thermal motion only, no net drift', latX + latW / 2, latY + latH - 16, `500 11px ${F_SANS}`, C.muted, 'center', 'middle');
+          }
+        }
+      }
+
+      // =====================================================
+      // PAGE 3: DIODE LAB (#diode)
+      // =====================================================
+      const diodeState = {
+        tab: 1,
+        view: 'compare',
+        vs: 5.0,
+        tempC: 27,
+        vbv: 20.0,
+        matKey: 'Si',
+        idealCurve: true,
+        magRev: true,
+        dotPhase: 0,
+        dragging: false
+      };
+
+      const circuitCanvas = document.getElementById('circuitCanvas');
+      const diodeIvCanvas = document.getElementById('diodeIvCanvas');
+      const dSolver = document.getElementById('dSolver');
+      const dVsSlider = document.getElementById('dVsSlider');
+      const dTSlider = document.getElementById('dTSlider');
+      const dBvSlider = document.getElementById('dBvSlider');
+      const dIdealCurveChk = document.getElementById('dIdealCurve');
+      const dMagRevChk = document.getElementById('dMagRev');
+
+      function dVsToSlider(v) {
+        return v >= 0 ? Math.round((v / 10) * 100) : Math.round((v / 25) * 100);
+      }
+
+      function dSliderToVs(s) {
+        return s >= 0 ? (s / 100) * 10 : (s / 100) * 25;
+      }
+
+      function updateDiodeThemeSwatches() {
+        const mat = DIODE_MATERIALS[diodeState.matKey];
+        const col = C[mat.colorKey];
+        document.getElementById('dActualDot').style.background = col;
+        document.getElementById('dLegActualSwatch').style.background = col;
+      }
+
+      function fmtRes(vd, idmA) {
+        if (Math.abs(idmA) < 1e-4) return '> MΩ';
+        const r = Math.abs(vd / (idmA / 1000));
+        if (r >= 1000) return `${(r / 1000).toFixed(2)} kΩ`;
+        return `${Math.round(r)} Ω`;
+      }
+
+      function fmtLeakage(mat, tempC) {
+        const isNA = mat.isNA * Math.pow(2, (tempC - 27) / 12);
+        if (isNA >= 1000) return `−${(isNA / 1000).toFixed(2)} µA`;
+        return `−${Math.round(isNA)} nA`;
+      }
+
+      function syncDiodeUI() {
+        const mat = DIODE_MATERIALS[diodeState.matKey];
+        const { tk, vt } = diodeThermal(diodeState.tempC);
+        const solved = solveDiodeCircuit(diodeState.vs, mat, diodeState.tempC, diodeState.vbv);
+        const { ideal, actual, vk } = solved;
+        const inBreakdown = diodeState.vs <= -diodeState.vbv;
+
+        // Tabs & Solver highlight
+        document.querySelectorAll('#diodeTabs .btn').forEach(b => {
+          const active = Number(b.dataset.tab) === diodeState.tab;
+          b.classList.toggle('on', active);
+          b.setAttribute('aria-selected', active ? 'true' : 'false');
+        });
+        dSolver.classList.toggle('ring', diodeState.tab === 1);
+
+        // View buttons
+        document.querySelectorAll('#diodeViews .btn').forEach(b => {
+          b.classList.toggle('on', b.dataset.view === diodeState.view);
+        });
+
+        // Material buttons & swatches
+        document.querySelectorAll('#dMaterials .btn').forEach(b => {
+          b.classList.toggle('on', b.dataset.mat === diodeState.matKey);
+        });
+        updateDiodeThemeSwatches();
+
+        // Presets active state
+        document.querySelectorAll('#dPresets .btn').forEach(b => {
+          const pvs = Number(b.dataset.vs);
+          b.classList.toggle('on', Math.abs(diodeState.vs - pvs) < 0.05);
+        });
+
+        // Ideal panel
+        const idealClosed = diodeState.vs > 0;
+        const dIdealPill = document.getElementById('dIdealPill');
+        dIdealPill.textContent = idealClosed ? 'Closed · short' : 'Open';
+        dIdealPill.style.color = idealClosed ? C.sky : C.muted;
+        dIdealPill.style.borderColor = idealClosed ? C.sky : C.line;
+        document.getElementById('dIdealVd').textContent = `${ideal.vd >= 0 ? '' : '−'}${Math.abs(ideal.vd).toFixed(2)} V`;
+        document.getElementById('dIdealId').textContent = `${ideal.id.toFixed(2)} mA`;
+        document.getElementById('dIdealRd').textContent = idealClosed ? '0 Ω' : '∞';
+
+        // Actual panel
+        document.getElementById('dActualTitle').textContent = `Actual diode (${mat.name})`;
+        const dActualPill = document.getElementById('dActualPill');
+        if (inBreakdown) {
+          dActualPill.textContent = `Breakdown −${diodeState.vbv.toFixed(1)} V`;
+          dActualPill.style.color = C.red;
+          dActualPill.style.borderColor = C.red;
+        } else {
+          dActualPill.textContent = `Knee ≈ ${vk.toFixed(2)} V`;
+          dActualPill.style.color = C.muted;
+          dActualPill.style.borderColor = C.line;
+        }
+        document.getElementById('dActualVd').textContent = `${actual.vd >= 0 ? '' : '−'}${Math.abs(actual.vd).toFixed(2)} V`;
+        if (diodeState.vs < 0 && !inBreakdown) {
+          document.getElementById('dActualId').textContent = fmtLeakage(mat, diodeState.tempC);
+          document.getElementById('dActualRd').textContent = '> MΩ';
+        } else {
+          document.getElementById('dActualId').textContent = `${actual.id >= 0 ? '' : '−'}${Math.abs(actual.id).toFixed(2)} mA`;
+          document.getElementById('dActualRd').textContent = fmtRes(actual.vd, actual.id);
+        }
+
+        // Solver card
+        document.getElementById('dSolveTk').innerHTML = `T<sub>K</sub> = 273 + ${diodeState.tempC} °C = ${tk} K`;
+        document.getElementById('dSolveVt').innerHTML = `V<sub>T</sub> = (1.38×10⁻²³ × ${tk}) / (1.6×10⁻¹⁹) = ${(vt * 1000).toFixed(3)} mV`;
+        document.getElementById('dSolveApprox').textContent = `≈ ${Math.round(vt * 1000)} mV`;
+
+        // Legend & Stats
+        document.getElementById('dLegActualText').innerHTML = `Actual · V<sub>K</sub> ≈ ${vk.toFixed(2)} V`;
+        const regEl = document.getElementById('dStatRegion');
+        if (inBreakdown) {
+          regEl.textContent = 'Reverse breakdown';
+          regEl.style.color = C.red;
+        } else if (diodeState.vs <= 0) {
+          regEl.textContent = 'Reverse biased';
+          regEl.style.color = C.muted;
+        } else if (actual.vd >= vk - 0.06 && actual.id > 0.2) {
+          regEl.textContent = 'Forward conducting';
+          regEl.style.color = C.green;
+        } else {
+          regEl.textContent = 'Sub-knee';
+          regEl.style.color = C.amber;
+        }
+        document.getElementById('dStatVt').textContent = `${(vt * 1000).toFixed(1)} mV`;
+        document.getElementById('dStatIdeal').textContent = `${ideal.id.toFixed(2)} mA`;
+        document.getElementById('dStatActual').textContent = `${actual.id >= 0 ? '' : '−'}${Math.abs(actual.id).toFixed(2)} mA`;
+
+        // Control values
+        const vsSign = diodeState.vs > 0.004 ? '+' : (diodeState.vs < -0.004 ? '−' : '+');
+        document.getElementById('dVsVal').textContent = `${vsSign}${Math.abs(diodeState.vs).toFixed(2)} V`;
+        dVsSlider.value = String(dVsToSlider(diodeState.vs));
+        document.getElementById('dTVal').textContent = `${diodeState.tempC} °C (${tk} K)`;
+        dTSlider.value = String(diodeState.tempC);
+        document.getElementById('dBvVal').textContent = `−${diodeState.vbv.toFixed(1)} V`;
+
+        // Insight prose
+        const insightEl = document.getElementById('dInsight');
+        if (inBreakdown || diodeState.tab === 4) {
+          insightEl.innerHTML = '<p><strong>Reverse breakdown.</strong> Reverse leakage is negligible until the reverse voltage reaches V<sub>BV</sub>. Past that point the Zener region conducts strongly, and the diode voltage clamps near −V<sub>BV</sub>.</p>';
+        } else if (diodeState.tab === 1) {
+          insightEl.innerHTML = '<p><strong>Thermal voltage.</strong> V<sub>T</sub> = kT/q sets the scale of the diode. At 27 °C (300 K) it is about 25.9 mV. Raise the temperature and the knee shifts down.</p>';
+        } else if (diodeState.tab === 2) {
+          insightEl.innerHTML = '<p><strong>Ideal switch.</strong> Forward biased, the diode is a short circuit (R<sub>D</sub> = 0 Ω). Reverse biased, it is an open circuit (I<sub>D</sub> = 0).</p>';
+        } else {
+          insightEl.innerHTML = `<p><strong>Ideal vs. actual.</strong> A ${mat.name === 'Si' ? 'silicon' : mat.name} diode conducts only after its knee, about ${vk.toFixed(2)} V. Its loop current is I<sub>D</sub> ≈ (V<sub>S</sub> − V<sub>K</sub>)/R, slightly lower than the ideal value.</p>`;
+        }
+      }
+
+      function selectDiodeTab(t) {
+        diodeState.tab = t;
+        if (t === 2) {
+          diodeState.view = 'ideal';
+          if (diodeState.vs < -15) diodeState.vs = -5;
+        } else if (t === 3) {
+          diodeState.view = 'compare';
+          if (diodeState.vs < 0) diodeState.vs = 5;
+        } else if (t === 4) {
+          diodeState.view = 'actual';
+          diodeState.vs = -21.5;
+        }
+        syncDiodeUI();
+      }
+
+      document.querySelectorAll('#diodeTabs .btn').forEach(b => {
+        b.addEventListener('click', () => selectDiodeTab(Number(b.dataset.tab)));
+      });
+      document.querySelectorAll('#diodeViews .btn').forEach(b => {
+        b.addEventListener('click', () => {
+          diodeState.view = b.dataset.view;
+          syncDiodeUI();
+        });
+      });
+      document.querySelectorAll('#dMaterials .btn').forEach(b => {
+        b.addEventListener('click', () => {
+          diodeState.matKey = b.dataset.mat;
+          syncDiodeUI();
+        });
+      });
+      document.querySelectorAll('#dPresets .btn').forEach(b => {
+        b.addEventListener('click', () => {
+          diodeState.vs = Number(b.dataset.vs);
+          syncDiodeUI();
+        });
+      });
+
+      dVsSlider.addEventListener('input', () => {
+        diodeState.vs = dSliderToVs(Number(dVsSlider.value));
+        syncDiodeUI();
+      });
+      document.getElementById('dVsDown').addEventListener('click', () => {
+        diodeState.vs = clamp(Math.round((diodeState.vs - 0.2) * 100) / 100, -25, 10);
+        syncDiodeUI();
+      });
+      document.getElementById('dVsUp').addEventListener('click', () => {
+        diodeState.vs = clamp(Math.round((diodeState.vs + 0.2) * 100) / 100, -25, 10);
+        syncDiodeUI();
+      });
+      dTSlider.addEventListener('input', () => {
+        diodeState.tempC = Number(dTSlider.value);
+        syncDiodeUI();
+      });
+      dBvSlider.addEventListener('input', () => {
+        diodeState.vbv = Number(dBvSlider.value);
+        syncDiodeUI();
+      });
+      dIdealCurveChk.addEventListener('change', () => {
+        diodeState.idealCurve = dIdealCurveChk.checked;
+      });
+      dMagRevChk.addEventListener('change', () => {
+        diodeState.magRev = dMagRevChk.checked;
+      });
+      document.getElementById('dLoad27Btn').addEventListener('click', () => {
+        diodeState.tempC = 27;
+        diodeState.tab = 1;
+        syncDiodeUI();
+      });
+
+      function stepDiode(dt) {
+        const mat = DIODE_MATERIALS[diodeState.matKey];
+        const solved = solveDiodeCircuit(diodeState.vs, mat, diodeState.tempC, diodeState.vbv);
+        const useIdeal = diodeState.view === 'ideal' || (diodeState.tab === 2 && diodeState.view !== 'actual');
+        const loopI = useIdeal ? solved.ideal.id : solved.actual.id;
+        if (Math.abs(loopI) > 0.05 || diodeState.vs <= -diodeState.vbv) {
+          const spd = Math.min(0.65, Math.abs(loopI) * 0.032) * (loopI >= 0 ? 1 : -1);
+          diodeState.dotPhase = (diodeState.dotPhase + spd * dt + 10) % 1;
+        }
+      }
+
+      function drawDiodeSymbol(ctx, cx, cy, col, isZener) {
+        ctx.save();
+        ctx.fillStyle = col;
+        ctx.strokeStyle = col;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(cx - 10, cy - 10);
+        ctx.lineTo(cx + 8, cy);
+        ctx.lineTo(cx - 10, cy + 10);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.strokeStyle = C.fg;
+        ctx.lineWidth = 2.2;
+        ctx.beginPath();
+        ctx.moveTo(cx + 8, cy - 11);
+        ctx.lineTo(cx + 8, cy + 11);
+        if (isZener) {
+          ctx.moveTo(cx + 8, cy - 11);
+          ctx.lineTo(cx + 13, cy - 14);
+          ctx.moveTo(cx + 8, cy + 11);
+          ctx.lineTo(cx + 3, cy + 14);
+        }
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      function drawCircuitScene() {
+        const { ctx, w, h } = fitCanvas(circuitCanvas);
+        ctx.clearRect(0, 0, w, h);
+
+        const mat = DIODE_MATERIALS[diodeState.matKey];
+        const solved = solveDiodeCircuit(diodeState.vs, mat, diodeState.tempC, diodeState.vbv);
+        const inBreakdown = diodeState.vs <= -diodeState.vbv;
+        const showIdeal = diodeState.view === 'ideal' || (diodeState.tab === 2 && diodeState.view !== 'actual');
+        const loopI = showIdeal ? solved.ideal.id : solved.actual.id;
+
+        // 1. Package strip at top (y: 8..64)
+        rrect(ctx, 14, 8, w - 28, 56, 8);
+        ctx.fillStyle = C.surface;
+        ctx.fill();
+        ctx.strokeStyle = C.line;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        const pkgX = Math.max(95, 0.22 * w);
+        const pkgY = 36;
+        ctx.strokeStyle = C.slate;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(pkgX - 38, pkgY);
+        ctx.lineTo(pkgX + 38, pkgY);
+        ctx.stroke();
+
+        rrect(ctx, pkgX - 22, pkgY - 10, 44, 20, 4);
+        ctx.fillStyle = C.pkgBody;
+        ctx.fill();
+        ctx.strokeStyle = C.slate;
+        ctx.lineWidth = 1.2;
+        ctx.stroke();
+        ctx.fillStyle = C.pkgBand;
+        ctx.fillRect(pkgX + 10, pkgY - 9.5, 6, 19);
+
+        const symX = Math.min(w - 95, 0.78 * w);
+        ctx.strokeStyle = C.slate;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(symX - 32, pkgY);
+        ctx.lineTo(symX + 32, pkgY);
+        ctx.stroke();
+        drawDiodeSymbol(ctx, symX, pkgY, C.sky, false);
+
+        if (w >= 480) {
+          txt(ctx, 'Anode (P)', pkgX - 42, pkgY, `600 11px ${F_SANS}`, C.red, 'right', 'middle');
+          txt(ctx, 'Cathode (N)', pkgX + 42, pkgY, `600 11px ${F_SANS}`, C.blue, 'left', 'middle');
+          txt(ctx, '+ Anode', symX - 36, pkgY, `600 11px ${F_SANS}`, C.muted, 'right', 'middle');
+          txt(ctx, 'Cathode −', symX + 36, pkgY, `600 11px ${F_SANS}`, C.muted, 'left', 'middle');
+        }
+
+        // 2. Main circuit loop
+        const top = 100;
+        const bot = h - 34;
+        const lx = Math.max(40, 0.10 * w);
+        const rx = w - lx;
+        const mx = w / 2;
+        const my = (top + bot) / 2;
+
+        ctx.strokeStyle = C.slate;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(lx, bot);
+        ctx.lineTo(lx, top);
+        ctx.lineTo(mx - 115, top);
+        ctx.moveTo(mx + 115, top);
+        ctx.lineTo(rx, top);
+        ctx.lineTo(rx, bot);
+        ctx.lineTo(lx, bot);
+        ctx.stroke();
+
+        // 3. Source circle at (lx, my)
+        ctx.beginPath();
+        ctx.arc(lx, my, 21, 0, Math.PI * 2);
+        ctx.fillStyle = C.surface;
+        ctx.fill();
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = diodeState.vs >= 0 ? C.blue : C.red;
+        ctx.stroke();
+        const topSign = diodeState.vs >= 0 ? '+' : '−';
+        const botSign = diodeState.vs >= 0 ? '−' : '+';
+        txt(ctx, topSign, lx, my - 8, `700 13px ${F_MONO}`, diodeState.vs >= 0 ? C.blue : C.red, 'center', 'middle');
+        txt(ctx, botSign, lx, my + 9, `700 13px ${F_MONO}`, C.muted, 'center', 'middle');
+        const vsStr = `V_S = ${diodeState.vs >= 0 ? '+' : '−'}${Math.abs(diodeState.vs).toFixed(1)} V`;
+        txt(ctx, vsStr, lx + 28, my, `600 11.5px ${F_MONO}`, C.fg, 'left', 'middle');
+
+        // 4. Resistor at (rx, my)
+        rrect(ctx, rx - 12, my - 30, 24, 60, 4);
+        ctx.fillStyle = C.surface;
+        ctx.fill();
+        ctx.strokeStyle = C.slate;
+        ctx.lineWidth = 1.6;
+        ctx.beginPath();
+        ctx.moveTo(rx, my - 30);
+        ctx.lineTo(rx, my - 20);
+        const zigs = [-15, -9, -3, 3, 9, 15];
+        zigs.forEach((zy, idx) => {
+          ctx.lineTo(rx + (idx % 2 === 0 ? -7 : 7), my + zy);
+        });
+        ctx.lineTo(rx, my + 20);
+        ctx.lineTo(rx, my + 30);
+        ctx.stroke();
+        txt(ctx, 'R = 500 Ω', rx - 18, my - 7, `600 11.5px ${F_MONO}`, C.fg, 'right', 'middle');
+        txt(ctx, 'limits I_D', rx - 18, my + 9, `500 10.5px ${F_SANS}`, C.green, 'right', 'middle');
+
+        // 5. Diode stage box at mx
+        const boxW = Math.min(230, Math.max(190, w - 120));
+        const boxH = 82;
+        const boxX = mx - boxW / 2;
+        const boxY = top - 34;
+
+        let boxBorder = C.slate;
+        if (inBreakdown && !showIdeal) boxBorder = C.red;
+        else if (diodeState.vs > 0) boxBorder = C.sky;
+
+        ctx.save();
+        if (inBreakdown && !showIdeal) {
+          ctx.shadowColor = C.red;
+          ctx.shadowBlur = 10;
+        }
+        rrect(ctx, boxX, boxY, boxW, boxH, 12);
+        ctx.fillStyle = C.surface;
+        ctx.fill();
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = boxBorder;
+        ctx.stroke();
+        ctx.restore();
+
+        // Leads inside box
+        ctx.strokeStyle = C.slate;
+        ctx.lineWidth = 1.6;
+        ctx.beginPath();
+        ctx.moveTo(mx - boxW / 2, top);
+        ctx.lineTo(mx - 58, top);
+        ctx.moveTo(mx + 58, top);
+        ctx.lineTo(mx + boxW / 2, top);
+        ctx.stroke();
+
+        // Polarity glyphs inside box corners
+        txt(ctx, diodeState.vs >= 0 ? '+' : '−', boxX + 12, boxY + 14, `700 12px ${F_MONO}`, diodeState.vs >= 0 ? C.green : C.red, 'left', 'middle');
+        txt(ctx, diodeState.vs >= 0 ? '−' : '+', boxX + boxW - 12, boxY + 14, `700 12px ${F_MONO}`, diodeState.vs >= 0 ? C.sky : C.green, 'right', 'middle');
+
+        let titleLine = '';
+        let subLine = '';
+        if (showIdeal) {
+          if (diodeState.vs > 0) {
+            ctx.strokeStyle = C.sky;
+            ctx.lineWidth = 3.2;
+            ctx.beginPath();
+            ctx.moveTo(mx - 58, top);
+            ctx.lineTo(mx + 58, top);
+            ctx.stroke();
+            titleLine = 'Short circuit · closed switch';
+            subLine = 'V_D = 0 V · R_D = 0 Ω';
+          } else {
+            ctx.strokeStyle = C.red;
+            ctx.lineWidth = 2.4;
+            ctx.beginPath();
+            ctx.moveTo(mx - 58, top);
+            ctx.lineTo(mx - 22, top);
+            ctx.lineTo(mx + 14, top + 14);
+            ctx.moveTo(mx + 22, top);
+            ctx.lineTo(mx + 58, top);
+            ctx.stroke();
+            titleLine = 'Open circuit · open switch';
+            subLine = 'V_D = V_S · R_D = ∞ · I_D = 0';
+          }
+        } else {
+          if (inBreakdown) {
+            ctx.strokeStyle = C.red;
+            ctx.lineWidth = 2.4;
+            ctx.beginPath();
+            ctx.moveTo(mx - 58, top);
+            ctx.lineTo(mx + 58, top);
+            ctx.stroke();
+            drawDiodeSymbol(ctx, mx, top, C.red, true);
+            titleLine = `Reverse breakdown · V_BV = −${diodeState.vbv.toFixed(0)} V`;
+            subLine = `V_D = −${Math.abs(solved.actual.vd).toFixed(2)} V · I_D = −${Math.abs(solved.actual.id).toFixed(2)} mA`;
+          } else if (diodeState.vs > 0 && solved.actual.vd >= solved.vk - 0.06 && solved.actual.id > 0.2) {
+            ctx.strokeStyle = C.green;
+            ctx.lineWidth = 2.4;
+            ctx.beginPath();
+            ctx.moveTo(mx - 58, top);
+            ctx.lineTo(mx + 58, top);
+            ctx.stroke();
+            drawDiodeSymbol(ctx, mx, top, C.green, false);
+            titleLine = `Conducting · knee ≈ ${solved.vk.toFixed(2)} V`;
+            subLine = `V_D = ${solved.actual.vd.toFixed(2)} V (ideal 0 V)`;
+          } else if (diodeState.vs > 0) {
+            ctx.save();
+            ctx.strokeStyle = C.amber;
+            ctx.lineWidth = 2;
+            ctx.setLineDash([4, 3]);
+            ctx.beginPath();
+            ctx.moveTo(mx - 58, top);
+            ctx.lineTo(mx + 58, top);
+            ctx.stroke();
+            ctx.restore();
+            drawDiodeSymbol(ctx, mx, top, C.amber, false);
+            titleLine = `Sub-knee · below ${solved.vk.toFixed(2)} V barrier`;
+            subLine = `I_D = ${solved.actual.id.toFixed(2)} mA vs ideal ${solved.ideal.id.toFixed(2)} mA`;
+          } else {
+            ctx.strokeStyle = C.muted;
+            ctx.lineWidth = 2.2;
+            ctx.beginPath();
+            ctx.moveTo(mx - 58, top);
+            ctx.lineTo(mx - 22, top);
+            ctx.lineTo(mx + 14, top + 14);
+            ctx.moveTo(mx + 22, top);
+            ctx.lineTo(mx + 58, top);
+            ctx.stroke();
+            titleLine = 'Reverse bias · open switch equivalent';
+            const lk = Math.round(mat.isNA * Math.pow(2, (diodeState.tempC - 27) / 12));
+            subLine = `I_s ≈ 0 mA (${lk} nA leakage)`;
+          }
+        }
+
+        const boxSubFont = w < 420 ? `500 9.5px ${F_MONO}` : `500 10.5px ${F_MONO}`;
+        txt(ctx, titleLine, mx, boxY + boxH - 28, `600 11px ${F_SANS}`, C.fg, 'center', 'middle');
+        txt(ctx, subLine, mx, boxY + boxH - 13, boxSubFont, C.muted, 'center', 'middle');
+
+        // 6. Animated loop dots (16 evenly spaced)
+        const perimPts = [
+          { x: lx, y: bot },
+          { x: lx, y: top },
+          { x: rx, y: top },
+          { x: rx, y: bot }
+        ];
+        const segLens = [top - bot < 0 ? bot - top : 0, rx - lx, bot - top, rx - lx];
+        const totalP = segLens.reduce((a, b) => a + b, 0);
+
+        function pointOnLoop(u) {
+          let d = ((u % 1) + 1) % 1 * totalP;
+          if (d < segLens[0]) return { x: lx, y: bot - d };
+          d -= segLens[0];
+          if (d < segLens[1]) return { x: lx + d, y: top };
+          d -= segLens[1];
+          if (d < segLens[2]) return { x: rx, y: top + d };
+          d -= segLens[2];
+          return { x: rx - d, y: bot };
+        }
+
+        if (Math.abs(loopI) > 0.05 || (inBreakdown && !showIdeal)) {
+          const dotColor = (inBreakdown && !showIdeal) ? C.red : (showIdeal ? C.sky : C.green);
+          for (let i = 0; i < 16; i++) {
+            const pt = pointOnLoop(diodeState.dotPhase + i / 16);
+            // Skip inside diode box & source/resistor centers cleanly or draw over wire
+            if (Math.abs(pt.y - top) < 2 && Math.abs(pt.x - mx) < boxW / 2 - 4) continue;
+            ctx.beginPath();
+            ctx.arc(pt.x, pt.y, 3.8, 0, Math.PI * 2);
+            ctx.fillStyle = dotColor;
+            ctx.fill();
+          }
+        }
+
+        // 7. Loop current callout at bottom
+        const callW = Math.min(240, w - 80);
+        rrect(ctx, mx - callW / 2, bot - 15, callW, 28, 14);
+        ctx.fillStyle = C.surface;
+        ctx.fill();
+        let callCol = C.muted;
+        let callStr = 'Loop current I_D ≈ 0.00 mA';
+        if (inBreakdown && !showIdeal) {
+          callCol = C.red;
+          callStr = `Loop current I_D = −${Math.abs(loopI).toFixed(2)} mA`;
+        } else if (Math.abs(loopI) > 0.05) {
+          callCol = C.green;
+          callStr = `Loop current I_D = ${loopI.toFixed(2)} mA`;
+        }
+        ctx.strokeStyle = callCol;
+        ctx.lineWidth = 1.4;
+        ctx.stroke();
+        txt(ctx, callStr, mx, bot - 1, `600 11.5px ${F_MONO}`, callCol, 'center', 'middle');
+      }
+
+      function diodeIvMetrics(w, h) {
+        const ox = 0.52 * w;
+        const oy = 0.60 * h;
+        const rW = w - ox - 24;
+        const lW = ox - 28;
+        const tH = oy - 24;
+        const bH = h - oy - 24;
+        const off = diodeState.magRev ? 10 : 0;
+        return { ox, oy, rW, lW, tH, bH, off };
+      }
+
+      function drawDiodeIvPlot() {
+        const { ctx, w, h } = fitCanvas(diodeIvCanvas);
+        ctx.clearRect(0, 0, w, h);
+
+        const m = diodeIvMetrics(w, h);
+        const mat = DIODE_MATERIALS[diodeState.matKey];
+        const solved = solveDiodeCircuit(diodeState.vs, mat, diodeState.tempC, diodeState.vbv);
+        const matColor = C[mat.colorKey];
+
+        function mapX(v) {
+          return v >= 0 ? m.ox + (v / 1.4) * m.rW : m.ox - (Math.abs(v) / 25) * m.lW;
+        }
+        function mapY(i) {
+          if (i >= 0) return m.oy - Math.min(1.05, i / 20) * m.tH;
+          return m.oy + m.off + Math.min(0.95, Math.abs(i) / 20) * (m.bH - m.off);
+        }
+
+        // Gridlines at 5, 10, 15 mA
+        ctx.strokeStyle = C.grid;
+        ctx.lineWidth = 1;
+        [5, 10, 15].forEach(ma => {
+          const gy = mapY(ma);
+          ctx.beginPath();
+          ctx.moveTo(24, gy);
+          ctx.lineTo(w - 16, gy);
+          ctx.stroke();
+        });
+
+        // Axes
+        ctx.strokeStyle = C.muted;
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.moveTo(20, m.oy);
+        ctx.lineTo(w - 14, m.oy);
+        ctx.moveTo(m.ox, 16);
+        ctx.lineTo(m.ox, h - 14);
+        ctx.stroke();
+
+        // Zener region ellipse
+        const zx = mapX(-diodeState.vbv);
+        const zy = m.oy + m.off + (m.bH - m.off) * 0.48;
+        ctx.save();
+        ctx.fillStyle = C.zenerFill;
+        ctx.strokeStyle = C.red;
+        ctx.lineWidth = 1.3;
+        ctx.setLineDash([4, 3]);
+        ctx.beginPath();
+        ctx.ellipse(zx, zy, 22, Math.max(24, (m.bH - m.off) * 0.42), 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.restore();
+        txt(ctx, 'Zener region', zx + 26, zy, `600 10.5px ${F_SANS}`, C.red, 'left', 'middle');
+
+        // Axis & marker labels
+        txt(ctx, `${solved.vk.toFixed(2)} V`, mapX(solved.vk), m.oy + 14, `500 10.5px ${F_MONO}`, matColor, 'center', 'top');
+        txt(ctx, '−V_BV', zx, m.oy - 8, `600 10.5px ${F_MONO}`, C.red, 'center', 'bottom');
+        txt(ctx, '10 mA', 22, mapY(10) - 3, `500 10px ${F_MONO}`, C.muted, 'left', 'bottom');
+        txt(ctx, 'I_D (mA)', m.ox + 6, 16, `500 10.5px ${F_MONO}`, C.muted, 'left', 'top');
+        txt(ctx, 'V_D', w - 14, m.oy + 14, `500 10.5px ${F_MONO}`, C.muted, 'right', 'top');
+
+        // Ideal curve
+        if (diodeState.idealCurve) {
+          ctx.strokeStyle = C.sky;
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.moveTo(mapX(-24.5), m.oy);
+          ctx.lineTo(m.ox, m.oy);
+          ctx.lineTo(m.ox, mapY(20));
+          ctx.stroke();
+        }
+
+        // Actual curve
+        ctx.strokeStyle = matColor;
+        ctx.lineWidth = 2.6;
+        ctx.beginPath();
+        let started = false;
+        for (let v = -24.5; v <= 0.001; v += 0.15) {
+          const vv = Math.min(0, v);
+          const i = diodeActualCurrent(vv, mat, diodeState.tempC, diodeState.vbv);
+          const px = mapX(vv);
+          const py = mapY(i);
+          if (!started) { ctx.moveTo(px, py); started = true; }
+          else ctx.lineTo(px, py);
+        }
+        for (let v = 0.01; v <= 1.351; v += 0.015) {
+          const i = diodeActualCurrent(v, mat, diodeState.tempC, diodeState.vbv);
+          const px = mapX(v);
+          const py = mapY(i);
+          ctx.lineTo(px, py);
+          if (i > 21) break;
+        }
+        ctx.stroke();
+
+        // Ideal operating marker
+        if (diodeState.idealCurve) {
+          ctx.beginPath();
+          ctx.arc(mapX(solved.ideal.vd), mapY(solved.ideal.id), 4.5, 0, Math.PI * 2);
+          ctx.fillStyle = C.sky;
+          ctx.fill();
+        }
+
+        // Actual operating marker & guide lines
+        const ax = mapX(solved.actual.vd);
+        const ay = mapY(solved.actual.id);
+        ctx.save();
+        ctx.strokeStyle = C.amber;
+        ctx.lineWidth = 1.2;
+        ctx.setLineDash([3, 3]);
+        ctx.beginPath();
+        ctx.moveTo(ax, m.oy);
+        ctx.lineTo(ax, ay);
+        ctx.lineTo(m.ox, ay);
+        ctx.stroke();
+        ctx.restore();
+
+        const inBreakdown = diodeState.vs <= -diodeState.vbv;
+        ctx.beginPath();
+        ctx.arc(ax, ay, 5.5, 0, Math.PI * 2);
+        ctx.fillStyle = inBreakdown ? C.red : matColor;
+        ctx.fill();
+        ctx.lineWidth = 1.5;
+        ctx.strokeStyle = C.surface;
+        ctx.stroke();
+      }
+
+      function sweepFromPointer(clientX) {
+        const rect = diodeIvCanvas.getBoundingClientRect();
+        const x = clientX - rect.left;
+        const m = diodeIvMetrics(rect.width, rect.height);
+        let vs;
+        if (x >= m.ox) {
+          vs = clamp(((x - m.ox) / m.rW) * 10, 0, 10);
+        } else {
+          vs = clamp(-((m.ox - x) / m.lW) * 25, -25, 0);
+        }
+        diodeState.vs = Math.round(vs * 20) / 20;
+        syncDiodeUI();
+      }
+
+      diodeIvCanvas.addEventListener('pointerdown', (ev) => {
+        ev.preventDefault();
+        diodeState.dragging = true;
+        sweepFromPointer(ev.clientX);
+      });
+      window.addEventListener('pointermove', (ev) => {
+        if (!diodeState.dragging) return;
+        ev.preventDefault();
+        sweepFromPointer(ev.clientX);
+      });
+      window.addEventListener('pointerup', () => {
+        diodeState.dragging = false;
+      });
+      window.addEventListener('pointercancel', () => {
+        diodeState.dragging = false;
+      });
+
+      // =====================================================
+      // PAGE 4: DIODE RESISTANCE LEVELS (#resistance)
+      // =====================================================
+      const RES_IS_A = 5e-14; // Si reference saturation current giving ~1-25 mA around 0.60-0.70 V
+      const RES_N = 1.0;
+
+      function resShockleyMa(vd, tempK) {
+        const vt = (K_B * tempK) / Q_E;
+        const ex = Math.exp(Math.min(38, vd / (RES_N * vt)));
+        return Math.max(0, RES_IS_A * (ex - 1) * 1000);
+      }
+
+      function computeResistanceState(params) {
+        const { vdQ, dVpkMv, tempK, theta } = params;
+        const vt = (K_B * tempK) / Q_E;
+        const dVpk = dVpkMv / 1000;
+        const idQ = resShockleyMa(vdQ, tempK);
+        const rDC = idQ > 1e-6 ? vdQ / (idQ / 1000) : Infinity;
+        const isMa = RES_IS_A * 1000;
+        const rDyn = (RES_N * vt) / ((idQ + isMa) / 1000);
+
+        const vdMin = Math.max(0, vdQ - dVpk);
+        const vdMax = vdQ + dVpk;
+        const iMin = resShockleyMa(vdMin, tempK);
+        const iMax = resShockleyMa(vdMax, tempK);
+        const dVpp = vdMax - vdMin;
+        const dIpp = iMax - iMin;
+        const rAvg = dVpk > 0 && dIpp > 1e-6 ? dVpp / (dIpp / 1000) : null;
+
+        const dVt = dVpk * Math.sin(theta);
+        const vdInst = vdQ + dVt;
+        const idInst = resShockleyMa(vdInst, tempK);
+
+        return {
+          vt,
+          vdQ,
+          idQ,
+          rDC,
+          rDyn,
+          rAvg,
+          dVpk,
+          vdMin,
+          vdMax,
+          iMin,
+          iMax,
+          dVpp,
+          dIpp,
+          dVt,
+          vdInst,
+          idInst
+        };
+      }
+
+      const resState = {
+        mode: 'ac', // 'dc' | 'ac' | 'avg'
+        playing: true,
+        theta: 0,
+        vdQ: 0.64,
+        dVpkMv: 12,
+        speed: 1.0,
+        tempK: 300
+      };
+
+      const resCanvas = document.getElementById('resCanvas');
+      const resModeBtns = Array.from(document.querySelectorAll('#resModes .btn'));
+      const resPlayBtn = document.getElementById('resPlayBtn');
+      const resResetPhaseBtn = document.getElementById('resResetPhaseBtn');
+      const resVqSlider = document.getElementById('resVqSlider');
+      const resAmpSlider = document.getElementById('resAmpSlider');
+      const resSpeedSlider = document.getElementById('resSpeedSlider');
+      const resTSlider = document.getElementById('resTSlider');
+      const resDefaultBtn = document.getElementById('resDefaultBtn');
+
+      function fmtOhms(ohms) {
+        if (ohms == null || !Number.isFinite(ohms)) return '—';
+        if (ohms >= 1000) return `${(ohms / 1000).toFixed(2)} kΩ`;
+        return `${ohms.toFixed(1)} Ω`;
+      }
+
+      const RES_EXPLAIN = {
+        dc: '<p><strong>DC or static resistance (R<sub>D</sub>).</strong> Under a steady DC bias, the operating point remains fixed at (V<sub>D</sub>, I<sub>D</sub>). Resistance is simply the ratio <strong>R<sub>D</sub> = V<sub>D</sub> / I<sub>D</sub></strong>. Higher forward current rapidly lowers R<sub>D</sub>.</p>',
+        ac: '<p><strong>AC or dynamic resistance (r<sub>d</sub>).</strong> A small sinusoidal signal ΔV<sub>d</sub> moves the instantaneous point along the tangent line at the Q-point. Taking the derivative of the Shockley equation gives <strong>r<sub>d</sub> = dV<sub>D</sub> / dI<sub>D</sub> = nV<sub>T</sub> / I<sub>D</sub> ≅ 26 mV / I<sub>D</sub></strong> at room temperature.</p>',
+        avg: '<p><strong>Average AC resistance (r<sub>av</sub>).</strong> When a large AC swing drives the operating point across significant curvature, the secant chord connecting the peak-to-peak extremes defines <strong>r<sub>av</sub> = ΔV<sub>d</sub> / ΔI<sub>d</sub> |<sub>p-p</sub></strong>, capturing the asymmetric current swing.</p>'
+      };
+
+      let lastResExplainMode = '';
+
+      function syncResUI() {
+        const st = computeResistanceState(resState);
+        resModeBtns.forEach(b => b.classList.toggle('on', b.dataset.rmode === resState.mode));
+
+        resPlayBtn.textContent = resState.playing ? 'Pause' : 'Play';
+        resPlayBtn.classList.toggle('on', resState.playing);
+
+        resVqSlider.value = String(resState.vdQ);
+        resAmpSlider.value = String(resState.dVpkMv);
+        resSpeedSlider.value = String(resState.speed);
+        resTSlider.value = String(resState.tempK);
+
+        document.getElementById('resVqVal').textContent = `${resState.vdQ.toFixed(3)} V`;
+        document.getElementById('resAmpVal').textContent = `${resState.dVpkMv} mV (${(resState.dVpkMv * 2)} mV p-p)`;
+        document.getElementById('resSpeedVal').textContent = `${resState.speed.toFixed(1)}×`;
+        document.getElementById('resTVal').textContent = `${resState.tempK} K · ${(st.vt * 1000).toFixed(2)} mV`;
+
+        const deg = Math.round((((resState.theta % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2)) * 180 / Math.PI);
+        document.getElementById('resPhasePill').textContent = `θ = ${deg}° · v_D = ${st.vdInst.toFixed(3)} V`;
+        const dvSign = st.dVt >= 0 ? '+' : '−';
+        document.getElementById('resInstPill').textContent = `Δv_d = ${dvSign}${(Math.abs(st.dVt) * 1000).toFixed(1)} mV`;
+
+        document.getElementById('resStatVt').textContent = `${st.vdInst.toFixed(3)} V`;
+        document.getElementById('resStatIt').textContent = `${st.idInst.toFixed(2)} mA`;
+        document.getElementById('resStatDvp').textContent = `${(st.dVpp * 1000).toFixed(1)} mV`;
+        document.getElementById('resStatDip').textContent = `${st.dIpp.toFixed(2)} mA`;
+
+        document.getElementById('resStatRd').textContent = fmtOhms(st.rDC);
+        document.getElementById('resStatrd').textContent = fmtOhms(st.rDyn);
+        document.getElementById('resStatRav').textContent = fmtOhms(st.rAvg);
+        document.getElementById('resStatIdq').textContent = `${st.idQ.toFixed(2)} mA`;
+
+        const modePill = document.getElementById('resModePill');
+        const bigF = document.getElementById('resBigFormula');
+        const liveF = document.getElementById('resLiveFormula');
+
+        if (resState.mode === 'dc') {
+          modePill.textContent = 'DC static';
+          modePill.style.color = C.sky;
+          modePill.style.borderColor = C.sky;
+          bigF.innerHTML = 'R<sub>D</sub> = V<sub>D</sub> / I<sub>D</sub>';
+          liveF.textContent = `R_D = ${st.vdQ.toFixed(3)} V / ${st.idQ.toFixed(2)} mA = ${fmtOhms(st.rDC)}`;
+        } else if (resState.mode === 'ac') {
+          modePill.textContent = 'AC dynamic';
+          modePill.style.color = C.amber;
+          modePill.style.borderColor = C.amber;
+          bigF.innerHTML = 'r<sub>d</sub> = ΔV<sub>d</sub> / ΔI<sub>d</sub> = nV<sub>T</sub> / I<sub>D</sub> ≅ 26 mV / I<sub>D</sub>';
+          liveF.textContent = `r_d = ${(st.vt * 1000).toFixed(2)} mV / ${st.idQ.toFixed(2)} mA = ${fmtOhms(st.rDyn)}`;
+        } else {
+          modePill.textContent = 'Average AC';
+          modePill.style.color = C.violet;
+          modePill.style.borderColor = C.violet;
+          bigF.innerHTML = 'r<sub>av</sub> = ΔV<sub>d</sub> / ΔI<sub>d</sub> |<sub>peak to peak</sub>';
+          liveF.textContent = st.rAvg != null
+            ? `r_av = ${(st.dVpp * 1000).toFixed(1)} mV / ${st.dIpp.toFixed(2)} mA = ${fmtOhms(st.rAvg)}`
+            : 'Increase ΔV_pk > 0 mV to measure peak-to-peak secant';
+        }
+
+        if (lastResExplainMode !== resState.mode) {
+          lastResExplainMode = resState.mode;
+          document.getElementById('resExplain').innerHTML = RES_EXPLAIN[resState.mode];
+        }
+      }
+
+      function setResMode(mode) {
+        resState.mode = mode;
+        if (mode === 'dc') {
+          resState.dVpkMv = 0;
+        } else if (mode === 'ac') {
+          if (resState.dVpkMv === 0 || resState.dVpkMv > 20) resState.dVpkMv = 12;
+          resState.playing = true;
+        } else if (mode === 'avg') {
+          if (resState.dVpkMv < 25) resState.dVpkMv = 36;
+          resState.playing = true;
+        }
+        syncResUI();
+      }
+
+      resModeBtns.forEach(b => b.addEventListener('click', () => setResMode(b.dataset.rmode)));
+      resPlayBtn.addEventListener('click', () => {
+        resState.playing = !resState.playing;
+        syncResUI();
+      });
+      resResetPhaseBtn.addEventListener('click', () => {
+        resState.theta = 0;
+        syncResUI();
+      });
+      resDefaultBtn.addEventListener('click', () => {
+        resState.vdQ = 0.64;
+        resState.tempK = 300;
+        resState.speed = 1.0;
+        resState.mode = 'ac';
+        resState.dVpkMv = 12;
+        resState.playing = true;
+        syncResUI();
+      });
+
+      resVqSlider.addEventListener('input', () => {
+        resState.vdQ = Number(resVqSlider.value);
+        syncResUI();
+      });
+      resAmpSlider.addEventListener('input', () => {
+        resState.dVpkMv = Number(resAmpSlider.value);
+        if (resState.dVpkMv > 0 && resState.mode === 'dc') {
+          resState.mode = resState.dVpkMv >= 28 ? 'avg' : 'ac';
+        }
+        syncResUI();
+      });
+      resSpeedSlider.addEventListener('input', () => {
+        resState.speed = Number(resSpeedSlider.value);
+        syncResUI();
+      });
+      resTSlider.addEventListener('input', () => {
+        resState.tempK = Number(resTSlider.value);
+        syncResUI();
+      });
+
+      function stepResistance(dt) {
+        if (resState.playing) {
+          resState.theta = (resState.theta + dt * 2.4 * resState.speed) % (Math.PI * 2);
+          syncResUI();
+        }
+      }
+
+      function drawResScene() {
+        const { ctx, w, h } = fitCanvas(resCanvas);
+        ctx.clearRect(0, 0, w, h);
+
+        const st = computeResistanceState(resState);
+        const ox = clamp(w * 0.27, 88, 200);
+        const oy = h - clamp(h * 0.26, 100, 136);
+        const pW = w - ox - 26;
+        const pH = oy - 22;
+
+        const vAxisMax = 0.78;
+        const iAxisMax = Math.max(16, Math.ceil((st.iMax * 1.18) / 5) * 5);
+
+        function mapX(v) {
+          return ox + clamp(v / vAxisMax, 0, 1.02) * pW;
+        }
+        function mapY(iMa) {
+          return oy - clamp(iMa / iAxisMax, 0, 1.04) * pH;
+        }
+
+        // Gridlines
+        ctx.strokeStyle = C.grid;
+        ctx.lineWidth = 1;
+        const iStep = iAxisMax <= 25 ? 5 : 10;
+        for (let im = iStep; im < iAxisMax; im += iStep) {
+          const gy = mapY(im);
+          ctx.beginPath();
+          ctx.moveTo(ox, gy);
+          ctx.lineTo(w - 18, gy);
+          ctx.stroke();
+          txt(ctx, `${im}`, ox - 6, gy, `500 10px ${F_MONO}`, C.muted, 'right', 'middle');
+        }
+        for (let vv = 0.2; vv <= 0.71; vv += 0.2) {
+          const gx = mapX(vv);
+          ctx.beginPath();
+          ctx.moveTo(gx, 18);
+          ctx.lineTo(gx, oy);
+          ctx.stroke();
+          txt(ctx, `${vv.toFixed(1)}`, gx, oy + 6, `500 10px ${F_MONO}`, C.muted, 'center', 'top');
+        }
+
+        // Main axes
+        arrow(ctx, ox, oy + 8, ox, 12, C.muted, 1.4, 6);
+        arrow(ctx, ox - 8, oy, w - 12, oy, C.muted, 1.4, 6);
+        txt(ctx, 'I_D (mA)', ox + 8, 12, `600 11px ${F_MONO}`, C.muted, 'left', 'middle');
+        txt(ctx, 'V_D (V)', w - 14, oy + 16, `600 11px ${F_MONO}`, C.muted, 'right', 'top');
+        txt(ctx, '0', ox - 6, oy + 8, `500 10px ${F_MONO}`, C.muted, 'right', 'top');
+
+        // Main Shockley characteristic curve
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(ox, 10, pW + 10, pH + 14);
+        ctx.clip();
+
+        ctx.strokeStyle = C.blue;
+        ctx.lineWidth = 2.6;
+        ctx.beginPath();
+        let started = false;
+        for (let v = 0; v <= vAxisMax; v += 0.004) {
+          const im = resShockleyMa(v, resState.tempK);
+          const px = mapX(v);
+          const py = mapY(im);
+          if (!started) { ctx.moveTo(px, py); started = true; }
+          else ctx.lineTo(px, py);
+          if (im > iAxisMax * 1.06) break;
+        }
+        ctx.stroke();
+
+        const xQ = mapX(st.vdQ);
+        const yQ = mapY(st.idQ);
+        const xInst = mapX(st.vdInst);
+        const yInst = mapY(st.idInst);
+
+        // Tangent line (AC dynamic) or Secant line (Average AC)
+        if (resState.mode === 'ac' || (resState.mode === 'dc' && st.dVpk > 0)) {
+          const slopeMaPerV = 1000 / st.rDyn;
+          const dvSpan = 0.055;
+          const v1 = st.vdQ - dvSpan;
+          const v2 = st.vdQ + dvSpan;
+          const i1 = st.idQ - slopeMaPerV * dvSpan;
+          const i2 = st.idQ + slopeMaPerV * dvSpan;
+          ctx.strokeStyle = C.amber;
+          ctx.lineWidth = 1.8;
+          ctx.beginPath();
+          ctx.moveTo(mapX(v1), mapY(i1));
+          ctx.lineTo(mapX(v2), mapY(i2));
+          ctx.stroke();
+        } else if (resState.mode === 'avg' && st.dVpk > 0) {
+          const xMin = mapX(st.vdMin);
+          const yMin = mapY(st.iMin);
+          const xMax = mapX(st.vdMax);
+          const yMax = mapY(st.iMax);
+          ctx.save();
+          ctx.strokeStyle = C.violet;
+          ctx.lineWidth = 2.0;
+          ctx.setLineDash([5, 3]);
+          ctx.beginPath();
+          ctx.moveTo(xMin, yMin);
+          ctx.lineTo(xMax, yMax);
+          ctx.stroke();
+          ctx.restore();
+          [
+            [xMin, yMin],
+            [xMax, yMax]
+          ].forEach(([ex, ey]) => {
+            ctx.beginPath();
+            ctx.arc(ex, ey, 3.8, 0, Math.PI * 2);
+            ctx.fillStyle = C.violet;
+            ctx.fill();
+          });
+        }
+        ctx.restore();
+
+        // Static Q-point projections
+        if (st.dVpk === 0) {
+          arrow(ctx, xQ, yQ, ox + 3, yQ, C.sky, 1.5, 6);
+          arrow(ctx, xQ, yQ, xQ, oy - 3, C.sky, 1.5, 6);
+          txt(ctx, `I_D = ${st.idQ.toFixed(2)} mA`, (ox + xQ) / 2, yQ - 7, `600 10.5px ${F_MONO}`, C.sky, 'center', 'bottom');
+          txt(ctx, `V_D = ${st.vdQ.toFixed(3)} V`, xQ + 6, (oy + yQ) / 2, `600 10.5px ${F_MONO}`, C.sky, 'left', 'middle');
+        } else {
+          ctx.save();
+          ctx.strokeStyle = C.sky;
+          ctx.lineWidth = 1;
+          ctx.setLineDash([3, 3]);
+          ctx.beginPath();
+          ctx.moveTo(xQ, oy);
+          ctx.lineTo(xQ, yQ);
+          ctx.lineTo(ox, yQ);
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        // Perpendicular time-domain sine waves + animated dashed projection lines
+        if (st.dVpk > 0) {
+          // 1. Input sine wave below X-axis (time scrolls downward)
+          const waveTop = oy + 20;
+          const waveBot = h - 24;
+          const waveLen = Math.max(36, waveBot - waveTop);
+
+          // Faint center reference line at xQ
+          ctx.save();
+          ctx.strokeStyle = C.line;
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(xQ, waveTop);
+          ctx.lineTo(xQ, waveBot);
+          ctx.stroke();
+
+          ctx.strokeStyle = C.amber;
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          for (let y = waveTop; y <= waveBot; y += 2) {
+            const ph = resState.theta - ((y - waveTop) / waveLen) * Math.PI * 3;
+            const vx = st.vdQ + st.dVpk * Math.sin(ph);
+            const px = mapX(vx);
+            if (y === waveTop) ctx.moveTo(px, y);
+            else ctx.lineTo(px, y);
+          }
+          ctx.stroke();
+          ctx.restore();
+
+          // Delta V_d bracket below wave
+          const xMinW = mapX(st.vdMin);
+          const xMaxW = mapX(st.vdMax);
+          ctx.strokeStyle = C.muted;
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(xMinW, waveBot + 3);
+          ctx.lineTo(xMaxW, waveBot + 3);
+          ctx.stroke();
+          txt(ctx, `ΔV_d = ${(st.dVpp * 1000).toFixed(0)} mV`, xQ, waveBot + 7, `600 10px ${F_MONO}`, C.amber, 'center', 'top');
+
+          // 2. Output sine wave to the left of Y-axis (time scrolls leftward)
+          const waveRight = ox - 18;
+          const waveLeft = 14;
+          const hWaveLen = Math.max(36, waveRight - waveLeft);
+
+          ctx.save();
+          ctx.strokeStyle = C.line;
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(waveLeft, yQ);
+          ctx.lineTo(waveRight, yQ);
+          ctx.stroke();
+
+          ctx.strokeStyle = resState.mode === 'avg' ? C.violet : C.green;
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          for (let x = waveRight; x >= waveLeft; x -= 2) {
+            const ph = resState.theta - ((waveRight - x) / hWaveLen) * Math.PI * 3;
+            const vx = st.vdQ + st.dVpk * Math.sin(ph);
+            const iy = resShockleyMa(vx, resState.tempK);
+            const py = mapY(iy);
+            if (x === waveRight) ctx.moveTo(x, py);
+            else ctx.lineTo(x, py);
+          }
+          ctx.stroke();
+          ctx.restore();
+
+          const yMaxW = mapY(st.iMax);
+          const diFont = w < 460 ? `600 9.5px ${F_MONO}` : `600 10px ${F_MONO}`;
+          const diText = w < 460 ? `ΔI=${st.dIpp.toFixed(1)}mA` : `ΔI_d = ${st.dIpp.toFixed(1)} mA`;
+          txt(ctx, diText, waveLeft, Math.max(22, yMaxW - 8), diFont, resState.mode === 'avg' ? C.violet : C.green, 'left', 'bottom');
+
+          // 3. Animated dashed projection lines from input wave -> tracer dot -> output wave
+          const dashOff = -(resState.theta * 16) % 18;
+          ctx.save();
+          ctx.strokeStyle = C.red;
+          ctx.lineWidth = 1.5;
+          ctx.setLineDash([5, 4]);
+          ctx.lineDashOffset = dashOff;
+          ctx.beginPath();
+          ctx.moveTo(xInst, waveTop);
+          ctx.lineTo(xInst, yInst);
+          ctx.lineTo(waveRight, yInst);
+          ctx.stroke();
+          ctx.restore();
+
+          // Wave-head markers
+          ctx.beginPath();
+          ctx.arc(xInst, waveTop, 4, 0, Math.PI * 2);
+          ctx.fillStyle = C.amber;
+          ctx.fill();
+
+          ctx.beginPath();
+          ctx.arc(waveRight, yInst, 4, 0, Math.PI * 2);
+          ctx.fillStyle = resState.mode === 'avg' ? C.violet : C.green;
+          ctx.fill();
+        }
+
+        // Static Q-point dot
+        ctx.beginPath();
+        ctx.arc(xQ, yQ, 5.2, 0, Math.PI * 2);
+        ctx.fillStyle = C.sky;
+        ctx.fill();
+        ctx.lineWidth = 1.5;
+        ctx.strokeStyle = C.surface;
+        ctx.stroke();
+        txt(ctx, 'Q', xQ + 9, yQ + 10, `700 11px ${F_SANS}`, C.sky, 'left', 'top');
+
+        // Moving instantaneous tracer dot
+        if (st.dVpk > 0) {
+          ctx.save();
+          ctx.shadowColor = C.red;
+          ctx.shadowBlur = 9;
+          ctx.beginPath();
+          ctx.arc(xInst, yInst, 5.8, 0, Math.PI * 2);
+          ctx.fillStyle = C.red;
+          ctx.fill();
+          ctx.lineWidth = 1.6;
+          ctx.strokeStyle = C.surface;
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        // Zoomed-in inset box (top-left of Quadrant 1, below I_D axis label)
+        const boxW = w < 460 ? Math.min(156, pW * 0.56) : clamp(pW * 0.44, 170, 232);
+        const boxH = w < 460 ? 116 : clamp(pH * 0.54, 138, 174);
+        const boxX = ox + 16;
+        const boxY = 26;
+
+        rrect(ctx, boxX, boxY, boxW, boxH, 8);
+        ctx.fillStyle = C.surface;
+        ctx.fill();
+        ctx.strokeStyle = C.line;
+        ctx.lineWidth = 1.2;
+        ctx.stroke();
+
+        const insetTitle = boxW < 170
+          ? (resState.mode === 'avg' ? 'Zoom · secant' : 'Zoom · tangent')
+          : (resState.mode === 'avg'
+            ? 'Zoomed · secant triangle'
+            : (resState.mode === 'dc' && st.dVpk === 0 ? 'Zoomed · Q-point slope' : 'Zoomed · tangent triangle'));
+        txt(ctx, insetTitle, boxX + 10, boxY + 13, `600 10.5px ${F_SANS}`, C.fg, 'left', 'middle');
+
+        const padL = 14;
+        const padR = 16;
+        const padT = 32;
+        const padB = 22;
+        const ix0 = boxX + padL;
+        const iw = boxW - padL - padR;
+        const iy0 = boxY + padT;
+        const ih = boxH - padT - padB;
+
+        const effDv = st.dVpk > 0 ? st.dVpk : 0.01;
+        const spanV = 0.018 + 0.8 * effDv;
+        const iMaxRef = resShockleyMa(st.vdQ + 0.045, resState.tempK);
+        const tanHalfI = (effDv * 1000) / st.rDyn;
+        const spanI = Math.max(
+          1.2,
+          (st.iMax - st.iMin) * 0.78 + (iMaxRef - st.idQ) * 0.25,
+          tanHalfI * 1.15
+        );
+
+        function zX(v) {
+          return ix0 + ((v - (st.vdQ - spanV)) / (2 * spanV)) * iw;
+        }
+        function zY(iMa) {
+          return iy0 + ih - ((iMa - (st.idQ - spanI)) / (2 * spanI)) * ih;
+        }
+
+        ctx.save();
+        rrect(ctx, boxX + 2, boxY + 24, boxW - 4, boxH - 26, 6);
+        ctx.clip();
+
+        // Zoomed Shockley curve
+        ctx.strokeStyle = C.blue;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        for (let k = 0; k <= 40; k++) {
+          const v = (st.vdQ - spanV) + (k / 40) * (2 * spanV);
+          const py = zY(resShockleyMa(v, resState.tempK));
+          const px = zX(v);
+          if (k === 0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+        }
+        ctx.stroke();
+
+        // Tangent or Secant triangle inside inset
+        const triColor = resState.mode === 'avg' ? C.violet : C.amber;
+        let vLow = st.vdQ - effDv;
+        let vHigh = st.vdQ + effDv;
+        let iLow, iHigh;
+        if (resState.mode === 'avg' && st.dVpk > 0) {
+          iLow = st.iMin;
+          iHigh = st.iMax;
+        } else {
+          iLow = st.idQ - tanHalfI;
+          iHigh = st.idQ + tanHalfI;
+        }
+
+        const tx1 = zX(vLow);
+        const ty1 = zY(iLow);
+        const tx2 = zX(vHigh);
+        const ty2 = zY(iHigh);
+
+        // Filled right triangle (horizontal leg along bottom, vertical leg on right)
+        ctx.fillStyle = resState.mode === 'avg' ? 'rgba(109, 40, 217, 0.10)' : 'rgba(180, 83, 9, 0.10)';
+        ctx.beginPath();
+        ctx.moveTo(tx1, ty1);
+        ctx.lineTo(tx2, ty1);
+        ctx.lineTo(tx2, ty2);
+        ctx.closePath();
+        ctx.fill();
+
+        // Right-angle legs
+        ctx.strokeStyle = C.muted;
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.moveTo(tx1, ty1);
+        ctx.lineTo(tx2, ty1);
+        ctx.lineTo(tx2, ty2);
+        ctx.stroke();
+
+        // Hypotenuse (tangent or secant line)
+        ctx.strokeStyle = triColor;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(tx1, ty1);
+        ctx.lineTo(tx2, ty2);
+        ctx.stroke();
+
+        // Triangle vertex dots
+        [
+          [tx1, ty1],
+          [tx2, ty2]
+        ].forEach(([vx, vy]) => {
+          ctx.beginPath();
+          ctx.arc(vx, vy, 3, 0, Math.PI * 2);
+          ctx.fillStyle = triColor;
+          ctx.fill();
+        });
+
+        // Static Q-point inside inset
+        ctx.beginPath();
+        ctx.arc(zX(st.vdQ), zY(st.idQ), 4, 0, Math.PI * 2);
+        ctx.fillStyle = C.sky;
+        ctx.fill();
+
+        // Moving tracer dot inside inset
+        if (st.dVpk > 0) {
+          ctx.beginPath();
+          ctx.arc(zX(st.vdInst), zY(st.idInst), 4.4, 0, Math.PI * 2);
+          ctx.fillStyle = C.red;
+          ctx.fill();
+          ctx.lineWidth = 1.2;
+          ctx.strokeStyle = C.surface;
+          ctx.stroke();
+        }
+        ctx.restore();
+
+        // Inset triangle readout labels
+        const dispDv = st.dVpk > 0 ? st.dVpp * 1000 : 20;
+        const dispDi = st.dVpk > 0
+          ? (resState.mode === 'avg' ? st.dIpp : tanHalfI * 2)
+          : tanHalfI * 2;
+        txt(ctx, `ΔV_d=${dispDv.toFixed(0)}mV`, (tx1 + tx2) / 2, boxY + boxH - 8, `600 9.5px ${F_MONO}`, triColor, 'center', 'middle');
+        txt(ctx, `ΔI_d=${dispDi.toFixed(1)}mA`, boxX + 10, boxY + 26, `600 9.5px ${F_MONO}`, triColor, 'left', 'top');
+      }
+
+      // =====================================================
+      // ROUTING, RESIZE & SINGLE RAF LOOP
+      // =====================================================
+      const PAGES = ['junction', 'bands', 'diode', 'resistance'];
+      let activeRoute = 'junction';
+
+      function getRouteFromHash() {
+        const h = (location.hash || '').replace(/^#/, '').toLowerCase();
+        return PAGES.includes(h) ? h : 'junction';
+      }
+
+      function initVisiblePageCanvases() {
+        if (activeRoute === 'junction') {
+          fitCanvas(pnCanvas);
+          fitCanvas(barCanvas);
+          fitCanvas(pnIvCanvas);
+          seedPNParticles();
+          syncPNUI();
+        } else if (activeRoute === 'bands') {
+          fitCanvas(bandCanvas);
+          syncBandMeta();
+          seedBandParticles();
+        } else if (activeRoute === 'diode') {
+          fitCanvas(circuitCanvas);
+          fitCanvas(diodeIvCanvas);
+          syncDiodeUI();
+        } else if (activeRoute === 'resistance') {
+          fitCanvas(resCanvas);
+          syncResUI();
+        }
+      }
+
+      function showRoute(route) {
+        activeRoute = PAGES.includes(route) ? route : 'junction';
+        PAGES.forEach(r => {
+          document.getElementById(`page-${r}`).classList.toggle('active', r === activeRoute);
+        });
+        document.querySelectorAll('nav.site-nav a').forEach(a => {
+          a.classList.toggle('active', a.dataset.route === activeRoute);
+        });
+        initVisiblePageCanvases();
+      }
+
+      window.addEventListener('hashchange', () => {
+        showRoute(getRouteFromHash());
+      });
+
+      let resizeTimer = null;
+      window.addEventListener('resize', () => {
+        if (resizeTimer) clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+          if (activeRoute === 'junction') {
+            fitCanvas(pnCanvas);
+            fitCanvas(barCanvas);
+            fitCanvas(pnIvCanvas);
+            seedPNParticles();
+          } else if (activeRoute === 'bands') {
+            fitCanvas(bandCanvas);
+            seedBandParticles();
+          } else if (activeRoute === 'diode') {
+            fitCanvas(circuitCanvas);
+            fitCanvas(diodeIvCanvas);
+          } else if (activeRoute === 'resistance') {
+            fitCanvas(resCanvas);
+          }
+        }, 60);
+      });
+
+      let lastTime = performance.now();
+      function frame(now) {
+        const dt = Math.min(0.05, Math.max(0.001, (now - lastTime) / 1000));
+        lastTime = now;
+
+        if (activeRoute === 'junction') {
+          stepPN(dt);
+          drawPNScene();
+          drawBarrierPlot();
+          drawPNIvPlot();
+        } else if (activeRoute === 'bands') {
+          stepBands(dt, now);
+          drawBandScene(now);
+        } else if (activeRoute === 'diode') {
+          stepDiode(dt);
+          drawCircuitScene();
+          drawDiodeIvPlot();
+        } else if (activeRoute === 'resistance') {
+          stepResistance(dt);
+          drawResScene();
+        }
+
+        requestAnimationFrame(frame);
+      }
+
+      // Initialize
+      applyTheme('light');
+      showRoute(getRouteFromHash());
+      requestAnimationFrame(frame);
+
+      window.__SEMILAB__ = {
+        computePNPhysics,
+        fmtCurrentAmps,
+        diodeThermal,
+        diodeKnee,
+        diodeActualCurrent,
+        solveDiodeCircuit,
+        DIODE_MATERIALS,
+        resShockleyMa,
+        computeResistanceState,
+        getState: () => ({ activeRoute, currentTheme, pnState, bandState, diodeState, resState, C })
+      };
+    })();
+  </script>
+</body>
+</html>

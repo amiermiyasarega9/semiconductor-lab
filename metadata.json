@@ -1,0 +1,8 @@
+{
+  "name": "Remix Semiconductor Lab",
+  "description": "Interactive teaching simulations for PN junction physics, energy band diagrams, and diode characteristics.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

@@ -1,0 +1,308 @@
+Build a single self-contained HTML file (vanilla JavaScript, Canvas 2D, no build step, no frameworks) called "Semiconductor Lab". It is an interactive teaching site with three pages: PN junction, Energy bands, and Diode lab. Reproduce every control, formula, label, and behavior below. Keep the visual design exactly as specified.
+
+=====================================================
+1. GLOBAL STRUCTURE
+=====================================================
+
+Header (sticky, top, full width):
+- Left: brand text "Semiconductor Lab".
+- Center/right: nav links "PN junction" (#junction), "Energy bands" (#bands), "Diode lab" (#diode). The active link has a 2px accent-colored underline (inset box-shadow at the bottom), no background.
+- Right: a small pill button "Dark mode" / "Light mode" that toggles the theme.
+- Header background uses the --hdr color with backdrop blur 8px and a 1px bottom border.
+
+Routing: the page shows one section at a time based on location.hash. Listen to hashchange. Default to #junction. When a page is shown, re-measure and re-init its canvases. On window resize, re-measure the visible page's canvases (and re-seed particles on the PN and Bands pages).
+
+Render loop: a single requestAnimationFrame loop. dt = min(0.05, elapsed seconds). Call frame(dt) on the currently visible page only.
+
+Canvas helper: on each show/resize, set canvas.width/height to CSS size × devicePixelRatio and apply setTransform(dpr). Canvases are width 100% and fixed CSS heights (see sections below). Canvases stay transparent so the card or canvas-wrap background shows through.
+
+Layout: a two-column grid on screens ≥960px (main column minmax(0,1fr), sidebar 340px, gap 20px). Below 960px, stack everything in one column. Each page: h1 title, a lede paragraph, then the layout.
+
+Footer: a thin top border, muted small text: "Interactive teaching simulations · PN junction, energy bands, and diode characteristics."
+
+=====================================================
+2. THEME AND STYLE
+=====================================================
+
+Editorial, warm, serious-but-friendly. Think scientific journal paper.
+
+Fonts:
+- Headings and brand: serif stack "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif.
+- Body and buttons: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif. Base 14px / line-height 1.6.
+- Numbers and formulas: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace.
+
+Light theme (default, set on load):
+--bg #f4efe6; --surface #fffdf8; --hdr rgba(244,239,230,.88); --fg #1c1917; --muted #78716c; --line #e5dccb; --soft #efe8da; --prose #44403c; --on #fffdf8; --accent #0f766e.
+Carrier/diagram palette: electron/blue #0f766e; hole/red #c2410c; green #15803d; amber #b45309; sky #0e7490; violet #6d28d9.
+
+Dark theme (html[data-theme="dark"]):
+--bg #0f0d0b; --surface #191612; --hdr rgba(15,13,11,.88); --fg #f5efe6; --muted #a8a29e; --line #2c2722; --soft #211d19; --prose #d6cfc4; --on #0f0d0b; --accent #5eead4; color-scheme: dark.
+Carrier palette: blue #5eead4; red #fb923c; green #86efac; amber #fbbf24; sky #67e8f9; violet #c4b5fd.
+
+Implementation: a JS palette object for light and dark carrier colors. On toggle, set documentElement.dataset.theme and Object.assign the canvas color object (C) to the matching palette. The canvas color object is read at draw time, so every canvas drawing updates automatically. Fill surfaces (rounded boxes drawn on canvas) use C.surface, never a hard-coded white. Do not hard-code colors inside drawing functions except for glyph text on colored dots (white).
+
+Body: background-color var(--bg) with a faint dot grid: background-image radial-gradient(var(--line) 1px, transparent 1px), background-size 22px 22px. min-height 100vh. Antialiased text.
+
+Page heading: each h1 has a kicker drawn with ::before, 11px monospace, uppercase, letter-spacing .14em, accent color, margin-bottom 10px. Text per page:
+- #page-junction: "01 — Junction"
+- #page-bands: "02 — Energy bands"
+- #page-diode: "03 — Diode"
+h1: serif, 40px, line-height 1.08, letter-spacing -.015em, weight 500. On screens below 520px, 20px.
+Lede: serif italic, 18px, muted, max-width 640px, margin-bottom 30px.
+
+Cards (.card): border 1px var(--line), radius 6px, padding 20px, background var(--surface), shadow "0 1px 0 var(--line), 0 24px 48px -32px rgba(28,25,23,.45)". Variant .flush has padding 0 and overflow hidden, with a card header row (padding 12px 14px, bottom border).
+Card header (.card-h): flex, space-between, wrap, 14px bottom margin.
+Section label (.label): 11px, weight 600, uppercase, letter-spacing .12em, muted.
+Canvas wrap (.canvas-wrap): border 1px var(--line), radius 6px, overflow hidden, background var(--soft).
+Pill (.pill): monospace 12px, padding 2px 9px, pill radius, 1px border var(--line), muted text. Use accent or color override via inline style when showing a state.
+Buttons (.btn): 1px var(--line) border, background var(--surface), text var(--fg), padding 6px 14px, radius 999px, 13px. Hover background var(--soft). Active: scale .96. Selected state (.on): background var(--accent), border accent, text var(--on). Small variant (.sm): padding 3px 9px, 12px, monospace.
+Sliders: width 100%, accent-color var(--accent). Control rows (.ctrl): column flex, gap 8px, padding 12px 0, top border except the first. Control header (.ctrl-h): flex space-between, muted label, bold monospace value on the right. Scale row (.scale): 11px monospace labels below the slider (min, mid, max).
+Checkboxes and labeled toggles: accent-colored checkbox with a label. Switch toggle (.switch): a 36×20 pill track; checked = accent fill; knob white with a shadow that slides 16px.
+Stats (.stats): responsive grid, minmax(120px,1fr), gap 10px. Each .stat has 1px border, radius 10px, padding 10px 12px; a small muted label and a bold monospace value.
+Formula box (.formula): monospace 12.5px, muted, padding 10px 12px, 1px border, radius 10px, background var(--soft). Variant .big: centered, 14px, inherits font, foreground color.
+Prose (.prose): 13.5px, color var(--prose), paragraphs with 10px bottom margin, strong in foreground color weight 600.
+Legend (.legend): flex-wrap, 12px muted text, 8px/16px gaps, padding 10px 14px, top border. Each legend swatch is a 10px circle, inline-block, 6px right margin.
+Banner: hidden by default, shown with a flex row, padding 12px 14px, 1px border, radius 12px, background var(--soft).
+Toast: 13px foreground text below a canvas, min-height 20px, auto-clears after 2.6 s.
+Glassy aesthetics are NOT used on this site. Keep it editorial: flat surfaces, thin lines, soft shadows, one accent.
+
+=====================================================
+3. PAGE 1: PN JUNCTION (#junction)
+=====================================================
+
+Layout: main column (left) and sidebar (right).
+
+Main column, top to bottom:
+a) Mode buttons row: "1 · Joining", "2 · Unbiased", "3 · Forward +0.65 V", "4 · Reverse −3.0 V". The current mode button is highlighted (.on). Mode is derived from state: Joining if formation is active; Forward if V_D > 0.05; Reverse if V_D < −0.05; otherwise Unbiased.
+b) Formation banner (visible only while joining is active): left side shows the stage title (bold) and description (muted note); middle is a progress bar (4px tall, accent fill, width = progress %); right has "Pause"/"Resume" and "Restart" small buttons.
+c) Junction card (flush): header label "Physical junction · space charge" with two checkboxes "Spotlight minority carriers" (default off) and "Show recombination" (default on). Canvas height 400px. Legend: acceptor swatch (pink fill, red border) "Acceptor ion (−, fixed in P)"; donor swatch (light-blue fill, blue border) "Donor ion (+, fixed in N)"; hole swatch (red) "Hole"; electron swatch (blue) "Electron"; pill "W = x W₀" pushed right, updated each frame.
+d) Barrier card: header label "Barrier potential and field" with pill "V_barrier = 0.70 V"; canvas-wrap containing a canvas 150px tall.
+
+Sidebar, top to bottom:
+e) Bias and parameters card: header label with a "Reset to 0 V" small button (sets mode Unbiased). Controls:
+   - "Applied voltage V_D": header with "−0.05" small button, bold value (e.g. "+0.00 V"), "+0.02" small button. Range slider integer −100..100 (default 0). Mapping: slider s ≥ 0 → V = s/100 × 0.8; s < 0 → V = s/100 × 5. Scale labels: "−5.0 V", "0", "+0.80 V". The −0.05 and +0.02 buttons step V_D by those amounts, clamped to [−5, 0.8], and exit formation.
+   - "Ideality factor n": bold value "1.00"; slider 1..2 step 0.05, default 1.
+   - "Reverse saturation current I_s": value "10 nA"; slider 1..100 step 1, default 10.
+   - "Temperature T": value "300 K · 25.85 mV"; slider 250..400 step 5, default 300.
+f) Shockley equation card: header label with a state pill (text: "Joining", "Unbiased", "Forward bias", "Reverse bias", colored by state: joining amber, unbiased violet, forward green, reverse red). Big formula box: I_D = I_s (e^(V_D / nV_T) − 1) (with HTML sub/superscripts). Live formula box underneath: "I_D = 10 nA × (e^(0.00 V / 0.0259 V) − 1) = 0.00 nA" (update live). Stats row: "I_maj (diffusion)", "I_s (drift)", "Net I_D". Then a canvas-wrap with the I–V plot (220px tall).
+g) Explanation card (prose): text changes by state, see section 3.3.
+
+3.1 PHYSICS (exact):
+- V_T = k·T / q, with k = 1.380649e−23, q = 1.60217663e−19. (At 300 K, 25.85 mV.)
+- I_s in amps = IsnA × 1e−9.
+- Effective applied voltage v = 0 while formation is active; otherwise v = V_D.
+- ex = exp(min(35, v / (n · V_T))).
+- I_maj = I_s · ex. Net I_D = I_s · (ex − 1).
+- Built-in barrier V0 = 0.70 V. Barrier height bar = (formation ? V0 · progress : max(0.05, V0 − v)).
+- Depletion width ratio wr: formation → progress; else if v ≥ 0 → max(0.24, sqrt(bar / V0)); else (reverse) → 1 + 1.15 · (|v| / 5).
+
+3.2 CANVAS SCENE (junction canvas, width = page column, height 400):
+Geometry: bx = max(45, w·0.09); bw = w − 2·bx; mx = bx + bw/2; dh = bw·0.135·wr (half-width of depletion region); dl = mx − dh; dr = mx + dh; re = bx + bw. Block top by = 78; block height bh = min(165, h·0.43); external wire y wy = by + bh + 78.
+Draw order each frame:
+1. Top current arrows (at y=22 for Is, y=38 for I_maj):
+   - Is arrow amber, from (mx+15) leftward, length 45 (formation: 45·progress; forward: 35; reverse: 48). Label "I_s · minority drift" to the right, 11px semi-bold amber. Line width 2.5 when spotlight is on, else 1.5.
+   - I_maj arrow green, from (mx−45) rightward, length: formation → 85·(1 − 0.55·progress); forward → min(115, 45 + (V/0.75)·70); reverse → max(8, 45·exp(2V)) (V negative); otherwise 45. Label "I_maj · diffusion" at its tip. Line width 2.5 when V>0.1 or formation, else 1.5.
+   - Right-aligned text "I_D = I_maj − I_s" at (re, 32).
+2. Field arrow: at y = by − 14, centered at mx, red, width 2.2, arrow from (mx+span) to (mx−span) where span = clamp(dh·0.85, 22, 85). Label "E · built-in field (N → P)" above in red 12px semi-bold. During formation with progress < 0.08, draw the text "No space-charge field yet (E = 0)" instead.
+3. Blocks: P side (left of mx) tinted red at 7% alpha; N side (right of mx) tinted blue at 7%. Depletion region (dl to dr) filled light gray-blue (slate at 45% alpha) with dashed vertical edges, only if width > 3 px. A thin center line (mx) in a light gray. Block outline 1.5px gray-slate. Two gray contact bars on the left and right edges (7px wide, inset 18px top/bottom). Labels below the block at by+bh+22: "P region" (red, 13px semi-bold, centered over P side), "N region" (blue, centered over N side). If depletion width > 40 px, "depletion region" in muted 11px at +17px below the labels.
+4. Ions (only if dh ≥ 8): columns at offsets 11 + 20k (k=0..) from mx, count = clamp(floor((dh−4)/20), 1..5), stopping when offset > dh − 6. Rows: 6 per column, spaced (bh−20)/6, starting at by+10. On the P side (left): acceptor circles (radius 7.5, pink fill #fecdd3, red stroke 1.4px, red "−" glyph). On the N side (right): donor circles (light-blue fill #bae6fd, blue stroke, blue "+" glyph).
+5. Carriers (see 3.3). Majority holes (34) red circles r 4.5 with white "+". Majority electrons (34) blue circles r 4.5 with white "−". Minority electrons (4) blue circles, minority holes (4) red circles, each with an amber stroke (r 4.5 normally, r 6 with glow when spotlight on, and alpha 0.25 for the majority carriers when spotlight is on). Recombination flashes: amber rings that grow (radius +18/s) and fade (alpha −2.2/s).
+6. External circuit:
+   - Wires (gray-slate 1.6px) from each contact to a bottom wire at wy with loop corners at x = bx−28 (left) and re+28 (right). Battery sits on the bottom wire at mx.
+   - Unbiased (V = 0 and not forming): white-filled box at the battery with label "Unbiased · 0 V".
+   - Biased: four plate lines at dx = −14, −4, 6, 16 from mx, vertical half-heights 13 (long) or 7 (short). Forward: plates 0 and 2 are long (green), 1 and 3 short (sky). Reverse: plates 1 and 3 long (green), 0 and 2 short (sky). Polarity labels at the block contacts (+ green/− sky when forward; − red/+ green when reverse, 14px bold). Battery readout "V_D = +0.65 V" below the battery in monospace 11px.
+   - Currents: forward (V > 0.1): green arrows on both wire loops labeled "I_D". Reverse (V < −0.1): an amber arrow labeled "I_s".
+
+3.3 CARRIER MOTION (per frame):
+- ts = sqrt(T / 300).
+- Formation active (not paused) → diffusion flag if progress < 0.88. Non-formation: diffusion if V ≥ 0.25.
+- Push (diffusion drift): non-formation and V > 0 → (V / 0.75)^1.6 · 2.6; formation active → (1 − progress) · 2.2; else 0.
+- Majority holes: move by vx·ts + push (when diffusing); vertical bounce within block. When diffusing and x > dr + 15 + random·45, record a recombination flash (if enabled) and respawn at left edge (bx+8) at random height. Otherwise (not diffusing), clamp x to [bx+18 ... dl−8] with bounce. Min x = bx+8.
+- Majority electrons: move by vx·ts − push when diffusing. Diffusing: when x < dl − 15 − random·45, flash and respawn at right edge (re−8). Non-diffusing: clamp to [dr+8 ... re−18] with bounce.
+- Minority electrons: drift right at speed 2.2·ts inside the depletion zone (boost 1.6 when V < 0), else 0.65·ts. Respawn when x > dr + 45 at the left P region. Minority holes: drift left with the same rules, respawn when x < dl − 45 on the right N region.
+- Vertical wrap for all carriers: bounce between the top and bottom of the block (inset 8 px for majority, 12 px for minority).
+
+3.4 BARRIER PLOT (barrier canvas, height 150):
+- Vertical guides at dl and dr (dashed light gray).
+- Unbiased reference: dashed gray curve at the V0 level: flat at pY from bx to (mx − base), then bezier to (mx + base, uY), then flat to re. Where base = bw·0.135 and pY = h − 24, sc = h − 46, uY = pY − (0.70/2.8)·sc.
+- Active curve: the same shape, using the current barrier height nY = pY − clamp(bar/2.8, 0.04, 1)·sc (flat at pY from bx to dl, bezier through (mx, pY) and (mx, nY) to (dr, nY), flat to re). Gradient stroke red → violet → blue, 2.5px. Fill the area below with blue at 6% alpha.
+- "P" label at the left, red. Right-aligned label above the curve: "forming barrier", "reduced barrier", "increased barrier", or "equilibrium barrier V₀", followed by " · x.xx V".
+
+3.5 I–V PLOT (Shockley canvas, height 220):
+- Origin ox = w·0.46, oy = h·0.68. Right side (forward) spans 0 → 0.85 V over width rW = w − ox − 20; left side (reverse) spans 0 → −5 V over lW = ox − 24.
+- Vertical: forward current maps to oy − min(1.05, I_mA / 25) × tH (tH = oy − 22). Reverse current maps down: oy + min(0.92, |I_nA| / 120) × bH (bH = h − oy − 18).
+- Axes in gray; labels "+V_D (0.8 V)", "−V_D (−5 V)", "I_D (mA)", "−I_s (nA scale)".
+- Curve in sky blue 2.2px: reverse from −5 to 0 (step 0.1), then forward 0 to 0.85 (step 0.01), using the current n, I_s, and V_T.
+- Operating point dot (radius 5.5): green for forward, red for reverse, violet for unbiased/joining. Dashed guide lines from the dot to both axes.
+
+3.6 STATE TEXT (explanation card, updated only when the state changes):
+- Joining: "Instant of joining. Holes in P and electrons in N diffuse across the new boundary and recombine. Each electron that leaves N uncovers a fixed donor ion (+), and each hole that leaves P uncovers a fixed acceptor ion (−). These ions build a field E from N to P that slows diffusion."
+- Unbiased (V_D = 0 V): "The uncovered ions form a barrier field E from N to P. It blocks nearly all majority carriers, while minority carriers are swept across as a small drift current I_s. Diffusion and drift cancel, so I_D = I_s(e⁰ − 1) = 0 A."
+- Forward bias (V_D > 0): "The external source opposes the built-in field and lowers the barrier. The depletion region narrows, majority carriers diffuse easily, and I_D rises exponentially with voltage."
+- Reverse bias (V_D < 0): "The external field adds to the barrier, so the depletion region widens. Diffusion falls to almost zero, leaving only the small reverse saturation current, I_D ≈ −I_s."
+Use sub/superscript HTML for subscripts and exponents.
+
+3.7 JOINING ANIMATION:
+- Clicking "1 · Joining" resets progress to 0, sets V_D = 0, seeds particles, and shows the banner.
+- Progress advances at 0.14 per second (scaled by dt) until 1, unless paused.
+- Stage text by progress: < 0.30 "Stage 1 · Blocks joined" with "Majority carriers surge across the new boundary and recombine."; < 0.68 "Stage 2 · Ions uncovered" with "Electrons leaving N expose + donor ions; holes leaving P expose − acceptor ions."; otherwise "Stage 3 · Field builds" with "Accumulated ions create field E (N → P) that slows diffusion."; ≥ 0.99 "Equilibrium reached" with "The space-charge field balances diffusion. Net current is zero."
+- Pause/Resume toggles the progress advance; Restart re-runs joining from 0.
+- Dragging the voltage slider or step buttons, or choosing another mode, ends joining.
+
+=====================================================
+4. PAGE 2: ENERGY BANDS (#bands)
+=====================================================
+
+Layout: main column and sidebar.
+
+Main column:
+a) Material buttons: "Conductor", "Semiconductor", "Insulator", "n-type". Selected one is highlighted.
+b) Sub-selector (visible only for Semiconductor): "Ge · 0.67 eV", "Si · 1.10 eV", "GaAs · 1.43 eV" (small buttons). Default Si.
+c) Band canvas card (flush): header with the title (label style, showing "Silicon (Si)", "Conductor · Cu / Al", "Insulator · diamond / quartz", or "n-type semiconductor") and a pill "E_g = 1.10 eV" (conductor: "E_g = 0 eV (overlap)"). Canvas height 440px, clickable (click on the valence band excites an electron). Legend: "Valence electron (bound)" (blue dot), "Conduction electron (free)" (amber dot), "Hole" (dashed red ring), "Donor level" (violet dot).
+d) A two-column pair of cards (stacks to one column under 640px):
+   - Temperature card: "Temperature T" with value "300 K · 27 °C" (updates to "x K · y °C"); slider 0..800 step 10, default 300; scale labels "0 K", "300 K", "800 K".
+   - Photon card: "Photon energy hν" with value "1.2 eV"; slider 0.2..6 step 0.1, default 1.2; a "Pulse" small button beside it; note "Excites an electron when hν ≥ E_g."
+
+Sidebar:
+e) Electrical conduction card: label "Electrical conduction" and a switch "Apply voltage" (default off). Stats: "Current I" (value plus unit "mA"; conductor unit "A") and "Free e⁻ / holes" (value "free / holes"). Notes below (muted): one explanation line and a type line (both updated per frame from state). Toast area for photon messages.
+f) Explanation card (prose): material-specific text (see 4.5).
+g) Key principles card (prose): label "Key principles", then three paragraphs, each with a bold lead-in:
+   - "Discrete levels." Electrons occupy permitted energy states only, never inside the forbidden gap.
+   - "Higher energy, farther out." Outer valence electrons have the most potential energy. Once freed into the conduction band, they sit at the highest energy.
+   - "Conduction needs room." Current flows only when mobile charges sit in states next to empty, available levels.
+
+4.1 LAYOUT (band canvas, height 440):
+- bandX = 44; bandW = min(300, w·0.42); cbTop = 40; cbH = 80; cbBot = cbTop + cbH.
+- Gap height: conductor → −10 (overlap); insulator → 150; else min(130, max(40, Eg·75)).
+- vbTop = cbBot + gap; vbH = 90; vbBot = vbTop + vbH; donorY = cbBot + 18.
+- Eg: Ge 0.67, Si 1.10, GaAs 1.43, n-type 1.10 (donor band just under the CB), insulator 5.5, conductor 0.
+
+4.2 BAND DRAWING:
+- Energy axis at x = bandX − 18, from y = 35 to vbBot + 25, gray line with an arrowhead on top. Labels "Energy" (top), "higher" (near top), "lower" (near bottom), right-aligned at x − 6.
+- Conduction band rectangle (sky-tinted 12% gradient fading out downward, sky outline, title "Conduction band" at top-left, subtitle "Electrons free to carry current" below the title).
+- Valence band rectangle (blue-tinted 10% gradient, blue outline, title "Valence band", subtitle "Electrons bound to atoms").
+- Forbidden gap (not conductor): gray-tinted fill between cbBot and vbTop, a violet measurement bar on the right side (with small caps), and the centered label "Forbidden gap · E_g = x.xx eV" (violet, 11px semi-bold), plus "No electron states exist here" muted 10px below if the gap is taller than 40 px.
+- Conductor: a dashed amber rectangle straddling cbBot and the label "Bands overlap · no forbidden gap" in amber, centered at cbBot + 4.
+- n-type: a dashed violet donor line across the band at donorY with the right-aligned label "Donor level · E_d ≈ 0.05 eV below CB" just above the line.
+- Atomic lattice panel (only drawn if the space to the right of the band is ≥ 120 px): a rounded white/surface box at x = bandX + bandW + 40, from cbTop to vbBot + 10 tall, with the title "Atomic lattice". Grid of atoms: columns = clamp(floor(width/90), 2..3), rows 2, positions evenly spaced. Each atom: dashed blue orbit ring r 22 at 22% alpha, nucleus dot r 7 (gray, or violet for n-type). Caption at the bottom, centered: "Applied field: electrons drift (− → +)" (sky, when the voltage is on) or "Thermal motion only, no net drift" (muted).
+
+4.3 PARTICLES AND THERMAL PHYSICS:
+- Valence electrons: 32, random positions in the valence band, random slow velocities. Each has state 'v' (valence), 'c' (conduction), a target y ty (for smooth transitions, y moves 12% of the distance per frame), and a laser flag.
+- Conductor: the first 18 electrons start in the conduction band. Thermal update marks the first 20 as conduction.
+- n-type: 8 donor sites at donorY, evenly spaced across the band (x = bandX + 25 + i·spacing). Ionized donors (count = ceil(T/180 · 8) if T > 50, else 0) move in the conduction band with thermal jitter. Non-ionized stay at their site.
+- Semiconductor thermal excitation: maxEx = round(exp(−Eg / (kT·15)) · 16), with kT = 8.617e−5 · T, applied only when T > 40 K. If there are fewer conduction electrons than maxEx, promote valence electrons to the conduction band (targets in the conduction band) and add a hole for each. If there are more, demote the surplus back to the valence band and remove holes.
+- Insulator: all non-laser conduction electrons return to the valence band; holes are cleared.
+- Movement: valence electrons move with thermal velocity vib = min(2.5, T/300 · 0.9), bounce inside the valence band. Conduction electrons move with the same jitter plus drift (1.8 px/frame when the voltage is on), wrap at the right edge, bounce in the conduction band.
+- Holes: drift with jitter inside the valence band.
+- Drawing: valence electrons blue r 4 with white "−"; conduction electrons amber r 4.5 with dark "−"; holes dashed red rings r 4.5 with a "+"; donor electrons violet (or amber when ionized) r 4.
+
+4.4 PHOTON AND EXCITATION:
+- A photon packet: wavy yellow-gold line (#ca8a04) with a label "hν = x eV", launched from (x = 10, y = midway between cbBot and vbTop) and moving toward (band center x, vbTop + 25). It is absorbed when it arrives (distance < 15 px) or after its progress reaches 1.
+- On absorption: if hν ≥ E_g, a random valence electron is promoted to the conduction band with a hole left behind (laser flag set, so it is not reset by thermal updates) and the toast says "Absorbed: hν = X eV ≥ E_g = Y eV, electron promoted." Revert after 5 seconds (unless the material is a conductor): it falls back to the valence band and its hole is removed. Otherwise the toast says "Transmitted: hν = X eV is below E_g = Y eV."
+- "Pulse" button launches one packet at the current photon energy. A click on the valence band area (within 10 px vertically) excites one electron directly (toast "Electron excited by direct click.").
+
+4.5 MATERIAL TEXT (explanation card):
+- Conductor: "Conductor. The conduction and valence bands overlap, so there is no forbidden gap. Thermal motion alone places many electrons in the conduction band, giving high conductivity at ordinary temperatures."
+- Semiconductor: "[Ge / Silicon (Si) / Gallium arsenide (GaAs)] has a band gap of [0.67 / 1.10 / 1.43] eV. At 0 K every electron sits in the valence band and the material is an insulator. Heat, or light with hν ≥ E_g, lifts electrons into the conduction band and leaves holes behind."
+- Insulator: "Insulator. The gap exceeds 5 eV, far more than thermal energy can bridge. Electrons stay bound unless an extreme photon or field frees them, and the resulting breakdown is usually permanent."
+- n-type: "n-type semiconductor. Pentavalent donor atoms add energy levels about 0.05 eV below the conduction band. Room temperature is enough to ionize nearly every donor, flooding the conduction band with free electrons."
+
+4.6 METERS (updated every frame):
+- Free carriers = conduction electrons + conduction donors. Holes = number of holes.
+- Readout "free / holes" in the stat.
+- Voltage off: current "0.00", note "Voltage off: electrons move randomly, with no net drift.", type "No net conduction".
+- Voltage on and free = 0: current "0.00", note "No free carriers in the conduction band.", type "Blocked · insulating state".
+- Voltage on and free > 0: current = (free × 1.42) with two decimals; note "N free carriers drifting under the field."; type "Low-resistance conductor" (conductor) or "Active conduction" (others). Unit shows "A" for conductors and "mA" otherwise.
+- Toggling materials or sub-materials resets the particles and updates the title, pill, and explanation.
+
+=====================================================
+5. PAGE 3: DIODE LAB (#diode)
+=====================================================
+
+Layout: main column and sidebar.
+
+Top: tab buttons (above the layout, with 20px bottom margin): "1 · Thermal voltage", "2 · Ideal switch", "3 · Ideal vs. actual", "4 · Breakdown".
+
+Main column:
+a) Circuit card (flush): header label "Circuit · diode as switch" and view buttons "Compare", "Ideal", "Actual" (default Compare). Canvas height 320px. Below the canvas, a two-column pair (separated by a 1px divider, stacks on phones):
+   - Ideal diode panel: title with a cyan dot "Ideal diode" and a pill ("Closed · short" or "Open"). Key/value rows: V_D (x.xx V), I_D (x.xx mA), R_D ("0 Ω" when closed, "∞" when open).
+   - Actual diode panel: title with an amber dot "Actual diode (Si)" (the material name updates) and a pill ("Breakdown −20.0 V" in breakdown, else "Knee ≈ 0.70 V"). Rows: V_D, I_D (or "−10 nA" for reverse leakage), R_D = V_D / I_D (or "> MΩ" when current is negligible).
+b) Solver card (id dSolver; highlighted with an inset accent ring when tab 1 is active): header "Thermal voltage · live solver" and a button "Load 27 °C example" (sets T = 27 and selects tab 1). Formula box big: V_T = k T_K / q. Three formula boxes: "T_K = 273 + T °C = X K", "V_T = (1.38×10⁻²³ × X) / (1.6×10⁻¹⁹) = y.yyy mV", "≈ N mV".
+
+Sidebar:
+c) I_D vs V_D card (flush): header "I_D vs. V_D · drag to sweep" and a switch "Ideal curve" (default on). Canvas height 340px, cursor crosshair, pointer drag sweeps the source voltage (x right of the origin maps to 0..+10 V, x left maps to 0..−25 V). Legend: cyan "Ideal", material-colored swatch with "Actual · V_K ≈ 0.70 V" (updates), red at 50% "Zener region". Under the legend, a stats row: "Region" (colored text: "Reverse breakdown" red, "Forward conducting" green, "Sub-knee" amber, "Reverse biased" muted), "V_T", "Ideal I_D", "Actual I_D".
+d) Controls card:
+   - "Source voltage V_S": header with a "−0.2" button, bold value (e.g. "+5.00 V"), "+0.2" button. Slider −100..100 integer, default maps to +5 V. Mapping: s ≥ 0 → V = s/100 × 10; s < 0 → V = s/100 × 25. Scale: "−25 V", "0", "+10 V". Preset buttons row: "Breakdown −21.5 V", "Reverse −10 V", "Sub-knee +0.5 V", "Forward +5 V". Source range is clamped to [−25, 10].
+   - "Temperature": value "27 °C (300 K)"; slider −55..150 step 1, default 27; scale "−55 °C", "27 °C", "150 °C".
+   - "Breakdown voltage V_BV": value "−20.0 V"; slider 5..24 step 0.5, default 20; scale "−5 V", "−20 V", "−24 V".
+   - "Diode material": buttons "Si · 0.7 V", "Ge · 0.3 V", "GaAs · 1.2 V" (default Si). Note: "Series limiting resistor R = 500 Ω."
+   - Checkbox "Magnify reverse I_s and V_BV" (default on).
+e) Insight card (prose): text by tab (or by "breakdown" when the source is below −V_BV):
+   - Tab 1: "Thermal voltage. V_T = kT/q sets the scale of the diode. At 27 °C (300 K) it is about 25.9 mV. Raise the temperature and the knee shifts down."
+   - Tab 2: "Ideal switch. Forward biased, the diode is a short circuit (R_D = 0 Ω). Reverse biased, it is an open circuit (I_D = 0)."
+   - Tab 3: "Ideal vs. actual. A silicon diode conducts only after its knee, about 0.7 V. Its loop current is I_D ≈ (V_S − V_K)/R, slightly lower than the ideal value."
+   - Tab 4 / breakdown: "Reverse breakdown. Reverse leakage is negligible until the reverse voltage reaches V_BV. Past that point the Zener region conducts strongly, and the diode voltage clamps near −V_BV."
+
+Tab behavior:
+- Tab 1: no view change. Solver card highlighted.
+- Tab 2: view = Ideal; if V_S < −15, set V_S = −5.
+- Tab 3: view = Compare; if V_S < 0, set V_S = 5.
+- Tab 4: view = Actual; set V_S = −21.5.
+
+5.1 MODEL (per material M with Vk, Is in nA, n):
+Si: Vk 0.70, Is 10 nA. Ge: Vk 0.30, Is 250 nA. GaAs: Vk 1.20, Is 1 nA.
+- Thermal: V_T = k·T_K/q with T_K = 273 + T °C, k = 1.38e−23, q = 1.6e−19.
+- Knee vk(T) = max(0.15, Vk − (T − 27) · 0.0018).
+- Ideal diode: if V_S > 0 → V_D = 0 and I_D = V_S / R (in mA × 1000). Else V_D = V_S, I_D = 0.
+- Actual forward (V_D ≥ 0): I(mA) = max(0, 10·exp((V_D − vk)/(1.45·V_T)) − 10·exp(−vk/(1.45·V_T))).
+- Actual reverse (V_D < 0): Is(T) = Is_nA × 1e−6 × 2^((T − 27)/12) in mA. I = −Is(T) × (1 − exp(V_D / V_T)). If |V_D| > V_BV − 0.35, add −18 × ((|V_D| − (V_BV − 0.15)) / 0.35)^2.6 (the Zener surge).
+- Circuit operating point (solve V_D such that V_D + I(V_D)·R/1000 = V_S, with R = 500 Ω):
+  - V_S ≥ 0: bisection on [0, min(V_S, vk + 0.45)], 28 iterations; if (mid + I(mid)·R/1000) < V_S then lo = mid, else hi = mid.
+  - −V_BV < V_S < 0: V_D = V_S (no breakdown).
+  - V_S ≤ −V_BV: breakdown; bisection on [V_S, −V_BV + 0.2], 28 iterations; if (mid + I(mid)·R/1000) > V_S then hi = mid, else lo = mid.
+  - Store the final operating point and current I_D (mA).
+- Plot: forward and reverse curve as described below.
+
+5.2 CIRCUIT CANVAS (height 320):
+- Package strip at top (inside a rounded box from y 8 to 64): diode package (rounded gray body at x = max(95, 0.22w), leads, cathode band) with labels "Anode (P)" (red, right-aligned) and "Cathode (N)" (blue). Symbol at x = min(w − 95, 0.78w): triangle pointing right in sky, bar in ink, with "+ Anode" and "Cathode −" labels. Skip the labels and captions when w < 480.
+- Loop: rectangle with corners at (lx, bot), (lx, top), (rx, top), (rx, bot), where top = 100, bot = h − 34, lx = max(40, 0.10w), rx = w − lx, mx = w/2, my = (top + bot)/2.
+- Source circle at (lx, my), radius 21, white fill, outline blue if V_S ≥ 0 else red, "+/−" glyph (top and bottom), label "V_S = +5.0 V" to its right.
+- Resistor at (rx, my): white box with a zigzag, label "R = 500 Ω" (left of it) and "limits I_D" (green).
+- Diode stage box at mx, width 230, height 82, top edge at y = top − 34, rounded radius 12, outline colored (red in breakdown, sky when forward, gray otherwise). Terminal leads from the box to ±58 px at the line y = top. Polarity glyphs inside the box corners. Content:
+  - Ideal view (or tab 2): closed switch (thick sky line) "Short circuit · closed switch" with "V_D = 0 V · R_D = 0 Ω" when V_S > 0; open switch (red slanted blade drawn downward) "Open circuit · open switch" with "V_D = V_S · R_D = ∞ · I_D = 0" otherwise.
+  - Actual: breakdown → red line plus a Zener symbol, "Reverse breakdown · V_BV = −20 V", "V_D = … · I_D = … mA". Forward above the knee → green line, diode symbol, "Conducting · knee ≈ x V", "V_D = … (ideal 0 V)". Forward below the knee → dashed amber line, "Sub-knee · below x V barrier", "I_D = … mA vs ideal … mA". Reverse → gray slanted blade, "Reverse bias · open switch equivalent", "I_s ≈ 0 mA (N nA leakage)".
+- Loop current callout box centered at the bottom: "Loop current I_D = x.xx mA" (green) or "Loop current I_D ≈ 0.00 mA" (muted), red in breakdown.
+- Animated current dots (16 dots evenly spaced along the loop): move at speed min(0.65, |I|·0.032) (sign follows current), drawn only when |I| > 0.05 or in breakdown. Color: red in breakdown, cyan in Ideal view, green otherwise. Dot radius 3.8.
+
+5.3 I–V PLOT (height 340):
+- Origin ox = 0.52w, oy = 0.60h. Forward: V 0 → 1.4 V maps to ox + (V/1.4) · rW (rW = w − ox − 24). Reverse: V 0 → −25 V maps to ox − (|V|/25) · lW (lW = ox − 28). Current: positive I maps to oy − min(1.05, I/20) · tH (tH = oy − 24). Negative I maps down: oy + off + min(0.95, |I|/20) · (bH − off), where off = 10 when Magnify is on (reverse region expands), bH = h − oy − 24.
+- Gridlines at 5, 10, 15 mA (light gray). Axis lines gray.
+- Zener region: a dashed red-outlined ellipse at the −V_BV position with a faint red fill, label "Zener region".
+- Labels: knee value below the axis at V_K, "−V_BV" above the axis at the breakdown voltage, "10 mA" at the left, "I_D (mA)" top, "V_D" bottom-right.
+- Ideal curve (when enabled): sky line 3px from −24.5 V to 0 then up to 20 mA on the forward axis.
+- Actual curve: material color 2.6px. Reverse sweep −24.5 → 0 (step 0.15), then forward 0.01 → 1.35 V (step 0.015), stop when I > 21 mA.
+- Operating point markers: ideal (sky dot, if enabled) and actual (material color dot with white 1.5px outline, red in breakdown). Dashed amber guide lines from the actual point to the axes.
+- Pointer drag (pointerdown, then pointermove on window until pointerup) sets V_S from the x-position using the mapping in section 5 (right of origin → 0..+10 V; left → 0..−25 V).
+
+5.4 CONTROLS:
+- Tabs, view buttons, material buttons, presets (data-vs values −21.5, −10, 0.5, 5), ±0.2 steps, sliders, switches. All update the view immediately.
+- Load 27 °C example sets temperature to 27 and selects tab 1.
+
+=====================================================
+6. VISUAL DETAILS CHECKLIST
+=====================================================
+
+- All canvases transparent over the card or canvas-wrap background. Use the surface color for filled boxes drawn on canvas.
+- Smooth rounded rectangles via arcTo (no roundRect dependency).
+- Glows: shadowBlur only on the photon/pulse, the Zener/signal items, and the recombination effect. Keep glows subtle.
+- Text on canvas: a helper that sets font, fillStyle, textAlign, textBaseline, then draws. Monospace for numeric readouts, system-ui for labels.
+- Wrap all pointer logic with preventDefault where needed; canvases use touch-action: none.
+- The page must stay usable at 360px width: stack all grids, scale canvas heights modestly, wrap buttons.
+
+=====================================================
+7. KNOWN IMPROVEMENTS TO MAKE (do these)
+=====================================================
+
+- The Si/Ge/GaAs curve colors in the diode plot must follow the active theme (read the palette at draw time, not at load).
+- Keep the theme toggle working on all pages without reloading.
+- The footer and header must be identical across pages.
